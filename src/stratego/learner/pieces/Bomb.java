@@ -1,11 +1,11 @@
 package stratego.learner.pieces;
 
-import stratego.learner.board.Board;
+import stratego.learner.board.Game;
 
 public class Bomb extends Piece {
 
 	@Override
-	public void attack(Piece defender, Board gameboard) {
+	public Result attack(Piece defender, Game gameboard) {
 		throw new UnsupportedOperationException("Bombs can't attack!");
 	}
 

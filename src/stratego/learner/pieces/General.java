@@ -1,12 +1,12 @@
 package stratego.learner.pieces;
 
-import stratego.learner.board.Board;
+import stratego.learner.board.Game;
 
 public class General extends Piece {
 
 	@Override
-	public void attack(Piece defender, Board gameBoard) {
-		defaultAttack(defender, gameBoard);
+	public Result attack(Piece defender, Game game) {
+		return defaultAttack(defender, game);
 	}
 
 	@Override

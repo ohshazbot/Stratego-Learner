@@ -1,15 +1,15 @@
 package stratego.learner.pieces;
 
-import stratego.learner.board.Board;
+import stratego.learner.board.Game;
 
 public class Spy extends Piece {
 
 	@Override
-	public void attack(Piece defender, Board gameboard) {
+	public Result attack(Piece defender, Game gameboard) {
 		if (defender.pieceType().equals(Pieces.MARSHALL))
-			gameboard.remove(defender);
+			return new Result(true, false);
 		else
-			defaultAttack(defender, gameboard);
+			return defaultAttack(defender, gameboard);
 	}
 
 	@Override
