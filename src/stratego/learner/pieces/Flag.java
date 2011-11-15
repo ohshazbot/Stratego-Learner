@@ -1,11 +1,16 @@
 package stratego.learner.pieces;
 
-import stratego.learner.board.Game;
 
 public class Flag extends Piece {
 
+	public Flag(int pieceNumber) {
+		super(pieceNumber);
+	}
+
 	@Override
-	public Result attack(Piece defender, Game gameboard) {
+	public Result attack(Piece defender) {
+		this.reveal();
+		defender.reveal();
 		throw new UnsupportedOperationException("Flags can't attack!");
 	}
 

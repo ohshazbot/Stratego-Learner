@@ -1,15 +1,20 @@
 package stratego.learner.pieces;
 
-import stratego.learner.board.Game;
 
 public class Spy extends Piece {
 
+	public Spy(int pieceNumber) {
+		super(pieceNumber);
+	}
+
 	@Override
-	public Result attack(Piece defender, Game gameboard) {
+	public Result attack(Piece defender) {
+		this.reveal();
+		defender.reveal();
 		if (defender.pieceType().equals(Pieces.MARSHALL))
 			return new Result(true, false);
 		else
-			return defaultAttack(defender, gameboard);
+			return defaultAttack(defender);
 	}
 
 	@Override

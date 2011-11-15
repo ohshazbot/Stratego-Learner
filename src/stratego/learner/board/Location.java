@@ -27,4 +27,22 @@ public class Location {
 	{
 		return xcord==other.xcord && ycord==other.ycord;
 	}
+	public boolean isOrthogonal(Location compareTo, boolean limitDistance) {
+		int xdiff = xcord - compareTo.xcord;
+		int ydiff = ycord - compareTo.ycord;
+		if (xdiff == 0)
+		{
+			if (ydiff > 1)
+				return !limitDistance;
+			return true;
+		}
+		if (ydiff == 0)
+		{
+			if (xdiff > 1)
+				return !limitDistance;
+			return true;
+		}
+		return false;
+		
+	}
 }

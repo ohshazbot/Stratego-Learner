@@ -1,18 +1,40 @@
 package stratego.learner.pieces;
 
-import stratego.learner.board.Game;
-import stratego.learner.pieces.Piece.Result;
+import java.util.LinkedList;
+import java.util.List;
+
+import stratego.learner.board.Board;
+import stratego.learner.board.Location;
+
 
 public abstract class Piece {
 	boolean onBoard = false;
 	public boolean revealed = false;
+	private int pieceNumber;
 
-	public Piece()
-	{	}
+	public Piece(int pieceNumber)
+	{
+		this.pieceNumber = pieceNumber;
+	}
 
-	public abstract Result attack(Piece defender, Game game);
+	public int hashCode()
+	{
+		return pieceNumber;
+	}
+	
+	public boolean equals(Piece otherPiece)
+	{
+		return hashCode()==otherPiece.hashCode();
+	}
+	
+	public abstract Result attack(Piece defender);
+	
+	public void reveal()
+	{
+		revealed = true;
+	}
 
-	public Result defaultAttack(Piece defender, Game game) {
+	public Result defaultAttack(Piece defender) {
 		if (defender.pieceType().equals(Pieces.BOMB)) {
 			return new Result(false, true);
 		}
@@ -32,8 +54,8 @@ public abstract class Piece {
 	public abstract Pieces pieceType();
 
 	public class Result{
-		boolean attackerLives;
-		boolean defenderLives;
+		public boolean attackerLives;
+		public boolean defenderLives;
 
 		public Result()
 		{
@@ -46,5 +68,33 @@ public abstract class Piece {
 			attackerLives = attackLive;
 			defenderLives = defendLive;
 		}
+	}
+	
+	public List<Location> moveLocations(Board board, Location currLoc)
+	{
+		List<Location> toRet = new LinkedList<Location>();
+		if (!canMove())
+			return toRet;
+		
+		for (int offset : new int[]{-1,1})
+		{
+			if (board.isOpen(currLoc.xcord+offset, currLoc.ycord))
+				toRet.add(new Location(currLoc.xcord+offset, currLoc.ycord));
+			if (board.isOpen(currLoc.xcord, currLoc.ycord+offset))
+				toRet.add(new Location(currLoc.xcord, currLoc.ycord+offset));
+		}
+		return toRet;
+	}
+
+	public boolean canMoveHere(Location destination, Location source,
+			Board board) {
+		if (!canMove())
+			return false;
+		if (board.isOpen(destination.xcord, destination.ycord))
+		{
+			if (destination.isOrthogonal(source, !pieceType().equals(Pieces.SCOUT)))
+				return true;
+		}
+		return false;
 	}
 }

@@ -1,8 +1,11 @@
 package stratego.learner.pieces;
 
-import stratego.learner.board.Game;
 
 public class Water extends Piece {
+	public Water() {
+		super(-1);
+	}
+
 	static Water water = null;
 	
 	public static Water getWater()
@@ -12,7 +15,7 @@ public class Water extends Piece {
 		return water;
 	}
 	@Override
-	public Result attack(Piece defender, Game game) {
+	public Result attack(Piece defender) {
 		throw new UnsupportedOperationException("Water is no one's unit");
 	}
 

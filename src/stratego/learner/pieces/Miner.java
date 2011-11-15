@@ -1,15 +1,20 @@
 package stratego.learner.pieces;
 
-import stratego.learner.board.Game;
 
 public class Miner extends Piece {
 
+	public Miner(int pieceNumber) {
+		super(pieceNumber);
+	}
+
 	@Override
-	public Result attack(Piece defender, Game game) {
+	public Result attack(Piece defender) {
+		this.reveal();
+		defender.reveal();
 		if (defender.pieceType().equals(Pieces.BOMB))
 			return new Result(true, false);
 		else
-			return defaultAttack(defender, game);
+			return defaultAttack(defender);
 	}
 
 	@Override
