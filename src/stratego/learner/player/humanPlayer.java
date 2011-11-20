@@ -18,9 +18,9 @@ public class HumanPlayer implements Player {
 	public Piece getMove(Map<Piece, Location> myPieces,
 			Map<Piece, Location> oppPieces, Board board, boolean redo) {
 		System.out.println("Your turn- the board is:");
-		System.out.println(boardString(board, myPieces, oppPieces));
-		System.out.println("\n\nWhich piece would you like to move and move it where?");
-		System.out.println("\nPlease provide source x-cord,y-cord destionation x-cord,y-cord\n");
+		System.out.println(boardString(board));
+		System.out.println("\nWhich piece would you like to move and move it where?");
+		System.out.println("Please provide source row,col destionation row,col");
 		BufferedReader br = new BufferedReader( new InputStreamReader(System.in));
 		try {
 			String input = br.readLine();
@@ -30,6 +30,19 @@ public class HumanPlayer implements Player {
 
 			String[] dest = moves[1].split(",");
 			destination = new Location(Integer.parseInt(dest[0]),Integer.parseInt(dest[1]));
+			
+			Piece piece = board.getPiece(source);
+			if (piece == null || !myPieces.containsKey(piece))
+			{
+				System.out.println("You selected in invalid piece of " + piece + " at " + source);
+				piece = null;
+			}
+			else if (!source.isOrthogonal(destination, !piece.pieceType().equals(Pieces.SCOUT)))
+			{
+				System.out.println("You selected an invalid destination of " + destination + " from source " + source + " for piece " + piece);
+				piece = null;
+			}
+
 			return board.getPiece(source);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -38,11 +51,16 @@ public class HumanPlayer implements Player {
 		return null;
 	}
 
-	private String boardString(Board board, Map<Piece, Location> myPieces,
-			Map<Piece, Location> oppPieces) {
-		StringBuilder sb = new StringBuilder("\033[31m\033[44m");
+	private String boardString(Board board) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("  ");
+		for (int i = 0; i < 10; i++)
+			sb.append(i);
+		sb.append('\n');
 		for (int i = 0; i < 10; i++)
 		{
+			sb.append(i);
+			sb.append(':');
 			for (int j = 0; j < 10; j++)
 			{
 				Piece piece = board.getPiece(new Location(i, j));
@@ -57,9 +75,12 @@ public class HumanPlayer implements Player {
 						sb.append('H');
 				}
 			}
+			sb.append(':');
+			sb.append(i);
 			sb.append('\n');
 		}
-		sb.append("\033[0m\n");
+		for (int i = 0; i < 10; i++)
+			sb.append(i);
 		return sb.toString();
 	}
 

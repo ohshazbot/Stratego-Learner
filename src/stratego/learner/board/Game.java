@@ -15,10 +15,12 @@ public class Game {
 	boolean redTurn;
 	boolean gameOver = false;
 	
-	public Game(Board startBoard, boolean redStart)
+	public Game(Board startBoard, boolean redStart, Map<Piece, Location> redPieces, Map<Piece, Location> bluePieces)
 	{
 		board = startBoard;
 		redTurn = redStart;
+		redPlayer = redPieces;
+		bluePlayer = bluePieces;
 	}
 	
 	public boolean move(Piece piece, Location destination)
@@ -58,8 +60,10 @@ public class Game {
 		board.remove(ownerMap.remove(piece));
 	}
 	
-	public void game(Player rPlayer, Player bPlayer, Map<Piece, Location> redPieces, Map<Piece, Location> bluePieces)
+	public void game(Player rPlayer, Player bPlayer)
 	{
+		rPlayer.setRedPlayer();
+		bPlayer.setBluePlayer();
 		while(!gameOver)
 		{
 			Player currPlayer;
@@ -76,8 +80,12 @@ public class Game {
 			}
 			
 			Piece piece = null;
-			while (piece != null && myPieces.containsKey(piece))
+			while (piece == null)
+			{
 				piece = currPlayer.getMove(myPieces, oppPieces, board, false);
+				if (!myPieces.containsKey(piece))
+					piece = null;
+			}
 			Location destination = currPlayer.moveLoc();
 			while (!move(piece, destination))
 			{

@@ -10,7 +10,7 @@ public enum Pieces{
 	SERGEANT('3'), 
 	MINER('2'), 
 	SCOUT('1'), 
-	SPY('0'), 
+	SPY('S'), 
 	BOMB('B'), 
 	FLAG('*'),
 	WATER('W');

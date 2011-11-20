@@ -13,6 +13,8 @@ public class Spy extends Piece {
 		defender.reveal();
 		if (defender.pieceType().equals(Pieces.MARSHALL))
 			return new Result(true, false);
+		else if (defender.pieceType().equals(Pieces.SPY))
+			return new Result(false, false);
 		else
 			return defaultAttack(defender);
 	}

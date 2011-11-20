@@ -23,20 +23,20 @@ public class SimpleGame {
 		for (Pieces pieces : Pieces.values())
 		{
 			Piece toPlace = Piece.makePiece(pieces, cnt2++, true);
-			Location toLoc = new Location(cnt%10,cnt/10);
+			Location toLoc = new Location(cnt%10, 3-cnt/10);
 			board.addPiece(toPlace, toLoc);
 			redPieces.put(toPlace, toLoc);
 			
 			toPlace = Piece.makePiece(pieces, cnt2++, false);
-			toLoc = new Location(cnt%10,10-cnt/10);
+			toLoc = new Location(cnt%10, 6+cnt/10);
 			board.addPiece(toPlace, toLoc);
 			bluePieces.put(toPlace, toLoc);
 			
 			cnt++;
 		}
 		
-		Game game = new Game(board, true);
-		game.game(new HumanPlayer(), new HumanPlayer(), redPieces, bluePieces);
+		Game game = new Game(board, true, redPieces, bluePieces);
+		game.game(new HumanPlayer(), new HumanPlayer());
 
 	}
 

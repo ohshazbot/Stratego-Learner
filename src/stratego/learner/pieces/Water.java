@@ -27,7 +27,7 @@ public class Water extends Piece {
 
 	@Override
 	public Pieces pieceType() {
-		return null;
+		return Pieces.WATER;
 	}
 
 }

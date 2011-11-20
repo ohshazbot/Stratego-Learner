@@ -6,47 +6,40 @@ import java.util.List;
 import stratego.learner.board.Board;
 import stratego.learner.board.Location;
 
-
 public abstract class Piece {
-	boolean onBoard = false;
+	boolean onBoard = true;
 	public boolean revealed = false;
 	private int pieceNumber;
 	private boolean redPlayer;
 
-	public Piece(int pieceNumber, boolean redOwner)
-	{
+	public Piece(int pieceNumber, boolean redOwner) {
 		this.pieceNumber = pieceNumber;
 		redPlayer = redOwner;
 	}
-	
-	public boolean redOwner()
-	{
+
+	public boolean redOwner() {
 		if (pieceType().equals(Pieces.WATER))
 			return false;
 		return redPlayer;
 	}
-	
-	public boolean blueOwner()
-	{
+
+	public boolean blueOwner() {
 		if (pieceType().equals(Pieces.WATER))
 			return false;
-		return !redPlayer;		
+		return !redPlayer;
 	}
 
-	public int hashCode()
-	{
+	public int hashCode() {
 		return pieceNumber;
 	}
-	
-	public boolean equals(Piece otherPiece)
-	{
-		return hashCode()==otherPiece.hashCode();
+
+	public boolean equals(Piece otherPiece) {
+		return hashCode() == otherPiece.hashCode();
 	}
-	
+
 	public abstract Result attack(Piece defender);
-	
-	public void reveal()
-	{
+
+	public void reveal() {
 		revealed = true;
 	}
 
@@ -55,13 +48,17 @@ public abstract class Piece {
 			return new Result(false, true);
 		}
 
+		if (defender.pieceType().equals(Pieces.SPY)) {
+			return new Result(true, false);
+		}
+
 		int compare = this.pieceType().compareTo(defender.pieceType());
 		if (compare > 0)
 			return new Result(true, false);
 		else if (compare < 0)
 			return new Result(false, true);
 		else {
-			return new Result(true, true);
+			return new Result(false, false);
 		}
 	}
 
@@ -69,35 +66,31 @@ public abstract class Piece {
 
 	public abstract Pieces pieceType();
 
-	public class Result{
+	public class Result {
 		public boolean attackerLives;
 		public boolean defenderLives;
 
-		public Result()
-		{
+		public Result() {
 			attackerLives = false;
 			defenderLives = false;
 		}
 
-		public Result(boolean attackLive, boolean defendLive)
-		{
+		public Result(boolean attackLive, boolean defendLive) {
 			attackerLives = attackLive;
 			defenderLives = defendLive;
 		}
 	}
-	
-	public List<Location> moveLocations(Board board, Location currLoc)
-	{
+
+	public List<Location> moveLocations(Board board, Location currLoc) {
 		List<Location> toRet = new LinkedList<Location>();
 		if (!canMove())
 			return toRet;
-		
-		for (int offset : new int[]{-1,1})
-		{
-			if (board.isOpen(currLoc.xcord+offset, currLoc.ycord))
-				toRet.add(new Location(currLoc.xcord+offset, currLoc.ycord));
-			if (board.isOpen(currLoc.xcord, currLoc.ycord+offset))
-				toRet.add(new Location(currLoc.xcord, currLoc.ycord+offset));
+
+		for (int offset : new int[] { -1, 1 }) {
+			if (board.isOpen(currLoc.xcord + offset, currLoc.ycord))
+				toRet.add(new Location(currLoc.xcord + offset, currLoc.ycord));
+			if (board.isOpen(currLoc.xcord, currLoc.ycord + offset))
+				toRet.add(new Location(currLoc.xcord, currLoc.ycord + offset));
 		}
 		return toRet;
 	}
@@ -106,45 +99,46 @@ public abstract class Piece {
 			Board board) {
 		if (!canMove())
 			return false;
-		if (board.isOpen(destination.xcord, destination.ycord))
-		{
-			if (destination.isOrthogonal(source, !pieceType().equals(Pieces.SCOUT)))
-				return true;
-		}
+		if (destination.isOrthogonal(source, !pieceType().equals(Pieces.SCOUT)))
+			return true;
 		return false;
 	}
-	
-	public static Piece makePiece(Pieces pieceType, int pieceNumber, boolean redOwner)
-	{
-		switch (pieceType)
-		{
+
+	public static Piece makePiece(Pieces pieceType, int pieceNumber,
+			boolean redOwner) {
+		switch (pieceType) {
 		case WATER:
 			return null;
 		case MARSHALL:
 			return new Marshall(pieceNumber, redOwner);
 		case GENERAL:
 			return new General(pieceNumber, redOwner);
-		case COLONEL: 
+		case COLONEL:
 			return new Colonel(pieceNumber, redOwner);
-		case MAJOR: 
+		case MAJOR:
 			return new Major(pieceNumber, redOwner);
-		case CAPTAIN: 
+		case CAPTAIN:
 			return new Captain(pieceNumber, redOwner);
-		case LIEUTENANT: 
+		case LIEUTENANT:
 			return new Lieutenant(pieceNumber, redOwner);
-		case SERGEANT: 
+		case SERGEANT:
 			return new Sergeant(pieceNumber, redOwner);
-		case MINER: 
+		case MINER:
 			return new Miner(pieceNumber, redOwner);
-		case SCOUT: 
+		case SCOUT:
 			return new Scout(pieceNumber, redOwner);
-		case SPY: 
+		case SPY:
 			return new Spy(pieceNumber, redOwner);
-		case BOMB: 
+		case BOMB:
 			return new Bomb(pieceNumber, redOwner);
 		case FLAG:
 			return new Flag(pieceNumber, redOwner);
 		}
 		return null;
+	}
+
+	public String toString() {
+		return pieceType().name() + "- #" + pieceNumber + ". Alive? " + onBoard
+				+ " owner is " + (redPlayer ? "red." : "blue.");
 	}
 }
