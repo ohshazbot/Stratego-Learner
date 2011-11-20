@@ -5,6 +5,7 @@ import stratego.learner.pieces.Water;
 
 public class Board {
 	Piece[][] board = new Piece[10][10];
+	boolean set;
 
 	public Board()
 	{
@@ -12,6 +13,20 @@ public class Board {
 			for (int j = 5; j <=6; j++)
 				board[i][j] = Water.getWater();
 	}
+	
+	public boolean addPiece(Piece piece, Location loc)
+	{
+		if (set)
+			return false;
+		board[loc.xcord][loc.ycord] = piece;
+		return true;
+	}
+	
+	public void setBoard()
+	{
+		set = true;
+	}
+	
 	public Piece getPiece(Location destination) {
 		return board[destination.xcord][destination.ycord];
 	}

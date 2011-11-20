@@ -11,10 +11,26 @@ public abstract class Piece {
 	boolean onBoard = false;
 	public boolean revealed = false;
 	private int pieceNumber;
+	private boolean redPlayer;
 
-	public Piece(int pieceNumber)
+	public Piece(int pieceNumber, boolean redOwner)
 	{
 		this.pieceNumber = pieceNumber;
+		redPlayer = redOwner;
+	}
+	
+	public boolean redOwner()
+	{
+		if (pieceType().equals(Pieces.WATER))
+			return false;
+		return redPlayer;
+	}
+	
+	public boolean blueOwner()
+	{
+		if (pieceType().equals(Pieces.WATER))
+			return false;
+		return !redPlayer;		
 	}
 
 	public int hashCode()
@@ -96,5 +112,39 @@ public abstract class Piece {
 				return true;
 		}
 		return false;
+	}
+	
+	public static Piece makePiece(Pieces pieceType, int pieceNumber, boolean redOwner)
+	{
+		switch (pieceType)
+		{
+		case WATER:
+			return null;
+		case MARSHALL:
+			return new Marshall(pieceNumber, redOwner);
+		case GENERAL:
+			return new General(pieceNumber, redOwner);
+		case COLONEL: 
+			return new Colonel(pieceNumber, redOwner);
+		case MAJOR: 
+			return new Major(pieceNumber, redOwner);
+		case CAPTAIN: 
+			return new Captain(pieceNumber, redOwner);
+		case LIEUTENANT: 
+			return new Lieutenant(pieceNumber, redOwner);
+		case SERGEANT: 
+			return new Sergeant(pieceNumber, redOwner);
+		case MINER: 
+			return new Miner(pieceNumber, redOwner);
+		case SCOUT: 
+			return new Scout(pieceNumber, redOwner);
+		case SPY: 
+			return new Spy(pieceNumber, redOwner);
+		case BOMB: 
+			return new Bomb(pieceNumber, redOwner);
+		case FLAG:
+			return new Flag(pieceNumber, redOwner);
+		}
+		return null;
 	}
 }

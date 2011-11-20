@@ -3,8 +3,8 @@ package stratego.learner.pieces;
 
 public class Flag extends Piece {
 
-	public Flag(int pieceNumber) {
-		super(pieceNumber);
+	public Flag(int pieceNumber, boolean redPlayer) {
+		super(pieceNumber, redPlayer);
 	}
 
 	@Override

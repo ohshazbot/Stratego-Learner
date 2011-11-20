@@ -1,6 +1,5 @@
 package stratego.learner.board;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import stratego.learner.pieces.Piece;
@@ -10,8 +9,8 @@ import stratego.learner.player.Player;
 
 
 public class Game {
-	Map<Piece, Location> redPlayer = new HashMap<Piece, Location>();
-	Map<Piece, Location> bluePlayer = new HashMap<Piece, Location>();
+	Map<Piece, Location> redPlayer;
+	Map<Piece, Location> bluePlayer;
 	Board board;
 	boolean redTurn;
 	boolean gameOver = false;
@@ -59,7 +58,7 @@ public class Game {
 		board.remove(ownerMap.remove(piece));
 	}
 	
-	public void game(Player rPlayer, Player bPlayer)
+	public void game(Player rPlayer, Player bPlayer, Map<Piece, Location> redPieces, Map<Piece, Location> bluePieces)
 	{
 		while(!gameOver)
 		{
@@ -77,7 +76,7 @@ public class Game {
 			}
 			
 			Piece piece = null;
-			while (piece != null)
+			while (piece != null && myPieces.containsKey(piece))
 				piece = currPlayer.getMove(myPieces, oppPieces, board, false);
 			Location destination = currPlayer.moveLoc();
 			while (!move(piece, destination))

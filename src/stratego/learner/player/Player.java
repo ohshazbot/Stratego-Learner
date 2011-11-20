@@ -7,6 +7,8 @@ import stratego.learner.pieces.Piece;
 
 
 public interface Player {
+	public void setRedPlayer();
+	public void setBluePlayer();
 	public Piece getMove(Map<Piece, Location> myPieces, Map<Piece, Location> oppPieces, Board board, boolean redo);
 	public Location moveLoc();
 }

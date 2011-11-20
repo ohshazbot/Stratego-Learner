@@ -3,8 +3,8 @@ package stratego.learner.pieces;
 
 public class Spy extends Piece {
 
-	public Spy(int pieceNumber) {
-		super(pieceNumber);
+	public Spy(int pieceNumber, boolean redPlayer) {
+		super(pieceNumber, redPlayer);
 	}
 
 	@Override

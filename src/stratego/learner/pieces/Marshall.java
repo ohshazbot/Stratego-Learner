@@ -3,8 +3,8 @@ package stratego.learner.pieces;
 
 public class Marshall extends Piece {
 
-	public Marshall(int pieceNumber) {
-		super(pieceNumber);
+	public Marshall(int pieceNumber, boolean redPlayer) {
+		super(pieceNumber, redPlayer);
 	}
 
 	@Override

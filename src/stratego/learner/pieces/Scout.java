@@ -8,8 +8,8 @@ import stratego.learner.board.Location;
 
 public class Scout extends Piece {
 
-	public Scout(int pieceNumber) {
-		super(pieceNumber);
+	public Scout(int pieceNumber, boolean redPlayer) {
+		super(pieceNumber, redPlayer);
 	}
 
 	@Override

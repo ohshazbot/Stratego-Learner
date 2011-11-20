@@ -3,7 +3,8 @@ package stratego.learner.pieces;
 
 public class Water extends Piece {
 	public Water() {
-		super(-1);
+		super(-1, true);
+		this.reveal();
 	}
 
 	static Water water = null;

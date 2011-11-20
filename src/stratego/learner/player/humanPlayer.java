@@ -10,8 +10,10 @@ import stratego.learner.board.Location;
 import stratego.learner.pieces.Piece;
 import stratego.learner.pieces.Pieces;
 
-public class humanPlayer implements Player {
+public class HumanPlayer implements Player {
 	Location destination;
+	boolean redPlayer;
+	
 	@Override
 	public Piece getMove(Map<Piece, Location> myPieces,
 			Map<Piece, Location> oppPieces, Board board, boolean redo) {
@@ -48,7 +50,7 @@ public class humanPlayer implements Player {
 					sb.append('_');
 				else
 				{
-					if (piece.revealed || myPieces.containsKey(piece) || piece.pieceType().equals(Pieces.WATER))
+					if (piece.revealed || ((redPlayer && piece.redOwner()) || (!redPlayer && piece.blueOwner())) || piece.pieceType().equals(Pieces.WATER))
 					{
 						sb.append(piece.pieceType().pieceType());
 					} else
@@ -64,6 +66,16 @@ public class humanPlayer implements Player {
 	@Override
 	public Location moveLoc() {
 		return destination;
+	}
+
+	@Override
+	public void setRedPlayer() {
+		redPlayer = true;
+	}
+
+	@Override
+	public void setBluePlayer() {
+		redPlayer = false;
 	}
 
 }
