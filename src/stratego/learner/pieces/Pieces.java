@@ -12,11 +12,17 @@ public enum Pieces{
 	SCOUT('1'), 
 	SPY('0'), 
 	BOMB('B'), 
-	FLAG('*');
+	FLAG('*'),
+	WATER('W');
 	
 	int rank;
 	private Pieces(char rankVal)
 	{
 		rank = rankVal;
+	}
+	
+	public char pieceType()
+	{
+		return (char) rank;
 	}
 }

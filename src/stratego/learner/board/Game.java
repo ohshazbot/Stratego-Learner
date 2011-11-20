@@ -76,7 +76,9 @@ public class Game {
 				oppPieces = redPlayer;
 			}
 			
-			Piece piece = currPlayer.getMove(myPieces, oppPieces, board, false);
+			Piece piece = null;
+			while (piece != null)
+				piece = currPlayer.getMove(myPieces, oppPieces, board, false);
 			Location destination = currPlayer.moveLoc();
 			while (!move(piece, destination))
 			{
