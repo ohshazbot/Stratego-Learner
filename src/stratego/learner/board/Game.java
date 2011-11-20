@@ -12,9 +12,15 @@ import stratego.learner.player.Player;
 public class Game {
 	Map<Piece, Location> redPlayer = new HashMap<Piece, Location>();
 	Map<Piece, Location> bluePlayer = new HashMap<Piece, Location>();
-	Board board = new Board();
-	boolean redTurn = false;
+	Board board;
+	boolean redTurn;
 	boolean gameOver = false;
+	
+	public Game(Board startBoard, boolean redStart)
+	{
+		board = startBoard;
+		redTurn = redStart;
+	}
 	
 	public boolean move(Piece piece, Location destination)
 	{
@@ -53,11 +59,8 @@ public class Game {
 		board.remove(ownerMap.remove(piece));
 	}
 	
-	public void game(String boardString, boolean redStart, Player rPlayer, Player bPlayer)
+	public void game(Player rPlayer, Player bPlayer)
 	{
-		this.board.load(boardString);
-		redTurn = redStart;
-		
 		while(!gameOver)
 		{
 			Player currPlayer;
