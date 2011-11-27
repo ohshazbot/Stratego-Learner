@@ -79,6 +79,7 @@ public class HumanPlayer implements Player {
 			sb.append(i);
 			sb.append('\n');
 		}
+		sb.append("  ");
 		for (int i = 0; i < 10; i++)
 			sb.append(i);
 		return sb.toString();

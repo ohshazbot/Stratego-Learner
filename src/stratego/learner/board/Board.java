@@ -1,5 +1,12 @@
 package stratego.learner.board;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import stratego.learner.pieces.Piece;
 import stratego.learner.pieces.Water;
 
@@ -48,5 +55,33 @@ public class Board {
 
 	public boolean isOpen(int xcord, int ycord) {
 		return board[xcord][ycord] == null;
+	}
+
+	public SortedMap<Integer, List<Piece>> getPiecesByDistance(
+			Map<Piece, Location> pieces, Location center) {
+		SortedMap<Integer, List<Piece>> toRet = new TreeMap<Integer, List<Piece>>();
+		for (Entry<Piece, Location> entry : pieces.entrySet())
+		{
+			Piece piece = entry.getKey();
+			if (!piece.canMove())
+				continue;
+
+			Location loc = entry.getValue();
+			int distance = distance(center, loc);
+			List<Piece> list = toRet.get(distance);
+			if (list == null)
+			{
+				list = new LinkedList<Piece>();
+				toRet.put(distance, list);
+			}
+			list.add(piece);
+		}
+
+		return toRet;
+	}
+
+	// This does not account for water, pieces in way
+	public int distance(Location center, Location loc) {
+		return Math.abs((center.xcord - loc.xcord))+Math.abs((center.ycord - loc.ycord));
 	}
 }
