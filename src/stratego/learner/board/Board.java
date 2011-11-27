@@ -1,7 +1,6 @@
 package stratego.learner.board;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -57,9 +56,9 @@ public class Board {
 		return board[xcord][ycord] == null;
 	}
 
-	public SortedMap<Integer, List<Piece>> getPiecesByDistance(
+	public SortedMap<Integer, LinkedHashMap<Piece, Location>> getPiecesByDistance(
 			Map<Piece, Location> pieces, Location center) {
-		SortedMap<Integer, List<Piece>> toRet = new TreeMap<Integer, List<Piece>>();
+		SortedMap<Integer, LinkedHashMap<Piece, Location>> toRet = new TreeMap<Integer, LinkedHashMap<Piece, Location>>();
 		for (Entry<Piece, Location> entry : pieces.entrySet())
 		{
 			Piece piece = entry.getKey();
@@ -67,21 +66,22 @@ public class Board {
 				continue;
 
 			Location loc = entry.getValue();
-			int distance = distance(center, loc);
-			List<Piece> list = toRet.get(distance);
+			Location offset = distance(center, loc);
+			int dist = offset.xcord + offset.ycord;
+			LinkedHashMap<Piece, Location> list = toRet.get(dist);
 			if (list == null)
 			{
-				list = new LinkedList<Piece>();
-				toRet.put(distance, list);
+				list = new LinkedHashMap<Piece, Location>();
+				toRet.put(dist, list);
 			}
-			list.add(piece);
+			list.put(piece, offset);
 		}
 
 		return toRet;
 	}
 
 	// This does not account for water, pieces in way
-	public int distance(Location center, Location loc) {
-		return Math.abs((center.xcord - loc.xcord))+Math.abs((center.ycord - loc.ycord));
+	public Location distance(Location center, Location loc) {
+		return new Location(Math.abs((center.xcord - loc.xcord)), Math.abs((center.ycord - loc.ycord)));
 	}
 }

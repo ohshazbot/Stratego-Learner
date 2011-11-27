@@ -28,7 +28,7 @@ public class CheaterBot implements Player {
 	public Piece getMove(Map<Piece, Location> myPieces,
 			Map<Piece, Location> oppPieces, Board board, boolean redo) {
 		Location flag = findFlag(oppPieces);
-		SortedMap<Integer, List<Piece>> pieces = board.getPiecesByDistance(oppPieces, flag);
+		SortedMap<Integer, LinkedHashMap<Piece, Location>> pieces = board.getPiecesByDistance(oppPieces, flag);
 
 		for (List<Piece> list : pieces.values())
 		{
