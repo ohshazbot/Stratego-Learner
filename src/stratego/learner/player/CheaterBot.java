@@ -1,7 +1,6 @@
 package stratego.learner.player;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -28,15 +27,29 @@ public class CheaterBot implements Player {
 	public Piece getMove(Map<Piece, Location> myPieces,
 			Map<Piece, Location> oppPieces, Board board, boolean redo) {
 		Location flag = findFlag(oppPieces);
-		SortedMap<Integer, LinkedHashMap<Piece, Location>> pieces = board.getPiecesByDistance(oppPieces, flag);
+		SortedMap<Integer, LinkedHashMap<Piece, Location>> pieces = board.getPiecesByDistance(myPieces, flag);
 
-		for (List<Piece> list : pieces.values())
+		for (LinkedHashMap<Piece, Location> list : pieces.values())
 		{
-			for (Piece p : list)
+			for (Entry<Piece, Location> entry : list.entrySet())
 			{
-				
+				Piece p = entry.getKey();
+				Location offset = entry.getValue();
+				Location myLoc = myPieces.get(p);
+				//TODO Scouts can move infinite
+				if (offset.xcord != 0 && board.canOccupy(myLoc.xcord+(offset.xcord > 0? 1 : -1), myLoc.ycord, redPlayer))
+				{
+					loc = new Location(myLoc.xcord+(offset.xcord > 0? 1 : -1), myLoc.ycord);
+					return p;
+				}
+				if (offset.ycord != 0 && board.canOccupy(myLoc.xcord, myLoc.ycord+(offset.ycord > 0? 1:-1), redPlayer))
+				{
+					loc = new Location(myLoc.xcord, myLoc.ycord+(offset.ycord > 0? 1:-1));
+					return p;
+				}
 			}
 		}
+		return null;
 		
 	}
 

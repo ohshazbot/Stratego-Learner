@@ -17,8 +17,6 @@ public class HumanPlayer implements Player {
 	@Override
 	public Piece getMove(Map<Piece, Location> myPieces,
 			Map<Piece, Location> oppPieces, Board board, boolean redo) {
-		System.out.println("Your turn- the board is:");
-		System.out.println(boardString(board));
 		System.out.println("\nWhich piece would you like to move and move it where?");
 		System.out.println("Please provide source row,col destionation row,col");
 		BufferedReader br = new BufferedReader( new InputStreamReader(System.in));
@@ -49,40 +47,6 @@ public class HumanPlayer implements Player {
 			e.printStackTrace();
 		}
 		return null;
-	}
-
-	private String boardString(Board board) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("  ");
-		for (int i = 0; i < 10; i++)
-			sb.append(i);
-		sb.append('\n');
-		for (int i = 0; i < 10; i++)
-		{
-			sb.append(i);
-			sb.append(':');
-			for (int j = 0; j < 10; j++)
-			{
-				Piece piece = board.getPiece(new Location(i, j));
-				if (piece == null)
-					sb.append('_');
-				else
-				{
-					if (piece.revealed || ((redPlayer && piece.redOwner()) || (!redPlayer && piece.blueOwner())) || piece.pieceType().equals(Pieces.WATER))
-					{
-						sb.append(piece.pieceType().pieceType());
-					} else
-						sb.append('H');
-				}
-			}
-			sb.append(':');
-			sb.append(i);
-			sb.append('\n');
-		}
-		sb.append("  ");
-		for (int i = 0; i < 10; i++)
-			sb.append(i);
-		return sb.toString();
 	}
 
 	@Override

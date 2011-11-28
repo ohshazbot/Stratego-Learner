@@ -60,12 +60,14 @@ public class Game {
 		board.remove(ownerMap.remove(piece));
 	}
 	
-	public void game(Player rPlayer, Player bPlayer)
+	public void game(Player rPlayer, Player bPlayer, boolean printBoard)
 	{
 		rPlayer.setRedPlayer();
 		bPlayer.setBluePlayer();
 		while(!gameOver)
 		{
+			if (printBoard)
+				System.out.println(boardString(board));
 			Player currPlayer;
 			Map<Piece, Location> myPieces, oppPieces;
 			if (redTurn){
@@ -95,5 +97,40 @@ public class Game {
 			
 			redTurn = !redTurn;
 		}
+	}
+	
+	
+	private String boardString(Board board) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("  ");
+		for (int i = 0; i < 10; i++)
+			sb.append(i);
+		sb.append('\n');
+		for (int i = 0; i < 10; i++)
+		{
+			sb.append(i);
+			sb.append(':');
+			for (int j = 0; j < 10; j++)
+			{
+				Piece piece = board.getPiece(new Location(i, j));
+				if (piece == null)
+					sb.append('_');
+				else
+				{
+					if (piece.revealed || ((redTurn && piece.redOwner()) || (!redTurn && piece.blueOwner())) || piece.pieceType().equals(Pieces.WATER))
+					{
+						sb.append(piece.pieceType().pieceType());
+					} else
+						sb.append('H');
+				}
+			}
+			sb.append(':');
+			sb.append(i);
+			sb.append('\n');
+		}
+		sb.append("  ");
+		for (int i = 0; i < 10; i++)
+			sb.append(i);
+		return sb.toString();
 	}
 }

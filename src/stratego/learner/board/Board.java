@@ -7,6 +7,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import stratego.learner.pieces.Piece;
+import stratego.learner.pieces.Pieces;
 import stratego.learner.pieces.Water;
 
 public class Board {
@@ -47,9 +48,28 @@ public class Board {
 		board[curr.xcord][curr.ycord] = null;
 	}
 
-	public void load(String boardCoding) {
-		// This method will load a board configuration from a string
+	public void load(String boardCoding, Map<Piece, Location> red, Map<Piece, Location> blue) {
+		int pieceCnt = 0;
+		int rowCnt = 0;
+		for (String row : boardCoding.split("\n"))
+		{
+			for (int i = 0; i < 10; i++)
+			{
+				char ch = row.charAt(i);
+				if (ch == '_' || ch == 'W')
+					continue;
 
+				boolean redPlayer = i <= 4;
+				Piece p = Piece.makePiece(Pieces.valueOf(ch), pieceCnt++, redPlayer);
+				Location loc = new Location(rowCnt, i);
+				addPiece(p, loc); 
+				if (redPlayer)
+					red.put(p, loc);
+				else
+					blue.put(p,  loc);
+			}
+			rowCnt++;
+		}
 	}
 
 	public boolean isOpen(int xcord, int ycord) {
@@ -67,7 +87,7 @@ public class Board {
 
 			Location loc = entry.getValue();
 			Location offset = distance(center, loc);
-			int dist = offset.xcord + offset.ycord;
+			int dist = Math.abs(offset.xcord) + Math.abs(offset.ycord);
 			LinkedHashMap<Piece, Location> list = toRet.get(dist);
 			if (list == null)
 			{
@@ -82,6 +102,48 @@ public class Board {
 
 	// This does not account for water, pieces in way
 	public Location distance(Location center, Location loc) {
-		return new Location(Math.abs((center.xcord - loc.xcord)), Math.abs((center.ycord - loc.ycord)));
+		return new Location(center.xcord - loc.xcord,center.ycord - loc.ycord);
 	}
+
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("  ");
+		for (int i = 0; i < 10; i++)
+			sb.append(i);
+		sb.append('\n');
+		for (int i = 0; i < 10; i++)
+		{
+			sb.append(i);
+			sb.append(':');
+			for (int j = 0; j < 10; j++)
+			{
+				Piece piece = getPiece(new Location(i, j));
+				if (piece == null)
+					sb.append('_');
+				else
+				{
+					sb.append(piece.pieceType().pieceType());
+				}
+			}
+			sb.append(':');
+			sb.append(i);
+			sb.append('\n');
+		}
+		sb.append("  ");
+		for (int i = 0; i < 10; i++)
+			sb.append(i);
+		return sb.toString();
+	}
+
+	public boolean canOccupy(int xcord, int ycord, boolean redPlayer) {
+		if (isOpen(xcord, ycord))
+			return true;
+		if (getPiece(new Location(xcord, ycord)).pieceType().equals(Pieces.WATER))
+			return false;
+		if (getPiece(new Location(xcord, ycord)).redOwner() != redPlayer)
+			return true;
+		return false;
+	}
+
 }

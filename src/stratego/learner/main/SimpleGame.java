@@ -36,7 +36,7 @@ public class SimpleGame {
 		}
 		
 		Game game = new Game(board, true, redPieces, bluePieces);
-		game.game(new HumanPlayer(), new HumanPlayer());
+		game.game(new HumanPlayer(), new HumanPlayer(), true);
 
 	}
 

@@ -15,7 +15,7 @@ public enum Pieces{
 	FLAG('*'),
 	WATER('W');
 	
-	int rank;
+	char rank;
 	private Pieces(char rankVal)
 	{
 		rank = rankVal;
@@ -24,5 +24,12 @@ public enum Pieces{
 	public char pieceType()
 	{
 		return (char) rank;
+	}
+
+	public static Pieces valueOf(char ch) {
+		for (Pieces p : Pieces.values())
+			if (p.rank == ch)
+				return p;
+		return null;
 	}
 }
