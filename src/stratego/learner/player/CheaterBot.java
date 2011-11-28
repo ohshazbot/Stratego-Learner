@@ -28,28 +28,37 @@ public class CheaterBot implements Player {
 			Map<Piece, Location> oppPieces, Board board, boolean redo) {
 		Location flag = findFlag(oppPieces);
 		SortedMap<Integer, LinkedHashMap<Piece, Location>> pieces = board.getPiecesByDistance(myPieces, flag);
-
+		Piece p = null;
+		
 		for (LinkedHashMap<Piece, Location> list : pieces.values())
 		{
 			for (Entry<Piece, Location> entry : list.entrySet())
 			{
-				Piece p = entry.getKey();
+				p = entry.getKey();
 				Location offset = entry.getValue();
 				Location myLoc = myPieces.get(p);
 				//TODO Scouts can move infinite
-				if (offset.xcord != 0 && board.canOccupy(myLoc.xcord+(offset.xcord > 0? 1 : -1), myLoc.ycord, redPlayer))
+				int neg = -1;
+				int pos = 1;
+				if (redo)
 				{
-					loc = new Location(myLoc.xcord+(offset.xcord > 0? 1 : -1), myLoc.ycord);
+					neg = 1;
+					pos = -1;
+				}
+				if (offset.ycord != 0 && board.canOccupy(myLoc.xcord, myLoc.ycord+(offset.ycord > 0? pos:neg), redPlayer))
+				{
+					loc = new Location(myLoc.xcord, myLoc.ycord+(offset.ycord > 0? pos:neg));
 					return p;
 				}
-				if (offset.ycord != 0 && board.canOccupy(myLoc.xcord, myLoc.ycord+(offset.ycord > 0? 1:-1), redPlayer))
+				if (offset.xcord != 0 && board.canOccupy(myLoc.xcord+(offset.xcord > 0? pos : neg), myLoc.ycord, redPlayer))
 				{
-					loc = new Location(myLoc.xcord, myLoc.ycord+(offset.ycord > 0? 1:-1));
+					loc = new Location(myLoc.xcord+(offset.xcord > 0? pos : neg), myLoc.ycord);
 					return p;
 				}
 			}
 		}
-		return null;
+		// Return a piece to trigger boolean 
+		return p;
 		
 	}
 

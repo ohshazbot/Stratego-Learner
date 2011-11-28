@@ -51,6 +51,9 @@ public abstract class Piece {
 		if (defender.pieceType().equals(Pieces.SPY)) {
 			return new Result(true, false);
 		}
+		if (defender.pieceType().equals(Pieces.FLAG)) {
+			return new Result(true, false);
+		}
 
 		int compare = this.pieceType().compareTo(defender.pieceType());
 		if (compare > 0)

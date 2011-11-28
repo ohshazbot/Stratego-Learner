@@ -72,8 +72,16 @@ public class Board {
 		}
 	}
 
-	public boolean isOpen(int xcord, int ycord) {
-		return board[xcord][ycord] == null;
+	public boolean isOpen(int x, int y) {
+		if (!inBounds(x,y))
+			return false;
+		return board[x][y] == null;
+	}
+
+	private boolean inBounds(int x, int y) {
+		if (x < 0 || y < 0 || x > 9 || y > 9)
+			return false;
+		return true;
 	}
 
 	public SortedMap<Integer, LinkedHashMap<Piece, Location>> getPiecesByDistance(
@@ -137,6 +145,8 @@ public class Board {
 	}
 
 	public boolean canOccupy(int xcord, int ycord, boolean redPlayer) {
+		if (!inBounds(xcord, ycord))
+			return false;
 		if (isOpen(xcord, ycord))
 			return true;
 		if (getPiece(new Location(xcord, ycord)).pieceType().equals(Pieces.WATER))
