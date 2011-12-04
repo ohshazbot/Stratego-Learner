@@ -1,10 +1,12 @@
 package stratego.learner.pieces;
 
+import stratego.learner.board.PlayerEnum;
+
 
 public class Bomb extends Piece {
 
-	public Bomb(int pieceNumber, boolean redPlayer) {
-		super(pieceNumber, redPlayer);
+	public Bomb(PlayerEnum own) {
+		super(own);
 	}
 
 	@Override

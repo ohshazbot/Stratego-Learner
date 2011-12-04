@@ -1,14 +1,14 @@
 package stratego.learner.player;
-import java.util.Map;
+import java.util.List;
 
 import stratego.learner.board.Board;
 import stratego.learner.board.Location;
-import stratego.learner.pieces.Piece;
 
 
 public interface Player {
 	public void setRedPlayer();
 	public void setBluePlayer();
-	public Piece getMove(Map<Piece, Location> myPieces, Map<Piece, Location> oppPieces, Board board, boolean redo);
-	public Location moveLoc();
+	public Action getAction(List<Location> myPieces, List<Location> oppPieces, Board board, boolean redo);
+	public void wins();
+	public void loses();
 }

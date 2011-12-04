@@ -1,10 +1,12 @@
 package stratego.learner.pieces;
 
+import stratego.learner.board.PlayerEnum;
+
 
 public class Lieutenant extends Piece {
 
-	public Lieutenant(int pieceNumber, boolean redPlayer) {
-		super(pieceNumber, redPlayer);
+	public Lieutenant(PlayerEnum own) {
+		super(own);
 	}
 
 	@Override

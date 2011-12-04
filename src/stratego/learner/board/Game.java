@@ -1,65 +1,70 @@
 package stratego.learner.board;
 
-import java.util.Map;
+import java.util.List;
 
 import stratego.learner.pieces.Piece;
 import stratego.learner.pieces.Piece.Result;
 import stratego.learner.pieces.Pieces;
+import stratego.learner.player.Action;
 import stratego.learner.player.Player;
 
 
 public class Game {
-	Map<Piece, Location> redPlayer;
-	Map<Piece, Location> bluePlayer;
 	Board board;
-	boolean redTurn;
+	PlayerEnum turn;
 	boolean gameOver = false;
 	
-	public Game(Board startBoard, boolean redStart, Map<Piece, Location> redPieces, Map<Piece, Location> bluePieces)
+	public Game(Board startBoard, PlayerEnum start)
 	{
 		board = startBoard;
-		redTurn = redStart;
-		redPlayer = redPieces;
-		bluePlayer = bluePieces;
+		turn = start;
 	}
 	
-	public boolean move(Piece piece, Location destination)
+	public boolean move(Action act)
 	{
-		Map<Piece, Location> playerMap = (redTurn? redPlayer : bluePlayer);
-		if (!piece.canMoveHere(destination, playerMap.get(piece), board))
+		Piece piece = board.get(act.src);
+		if (!piece.canMoveHere(act.src, act.dest, board))
 			return false;
-		Piece opponent = board.getPiece(destination);
+		
+		Piece opponent = board.get(act.dest);
 		if (opponent == null)
-			movePiece(piece, destination, playerMap);
+			try {
+				movePiece(act);
+			} catch (InvalidLocationException e1) {
+				e1.printStackTrace();
+				System.err.println("This really shouldn't happen!");
+				return false;
+			}
 		else
 		{
 			Result result = piece.attack(opponent);
 			if (!result.attackerLives)
 			{
-				remove(piece, playerMap);
+				board.remove(act.src);
 			}
 			if (!result.defenderLives)
 			{
 				if (opponent.pieceType().equals(Pieces.FLAG))
 					gameOver = true;
-				remove(opponent, (!redTurn? redPlayer : bluePlayer));
+				board.remove(act.dest);
 				if (result.attackerLives)
-					movePiece(piece, destination, playerMap);
+					try {
+						movePiece(act);
+					} catch (InvalidLocationException e) {
+						e.printStackTrace();
+						System.err.println("This really shouldn't happen!");
+						return false;
+					}
 			}
 		}
 		return true;
 	}
 
-	private void movePiece(Piece piece, Location destination, Map<Piece, Location> playerMap) {
-		Location curr = playerMap.get(piece);
-		board.move(curr, destination);
-		playerMap.get(piece).set(destination);
+	private void movePiece(Action act) throws InvalidLocationException {
+		Location curr = act.src;
+		board.move(curr, act.dest);
 	}
 
-	private void remove(Piece piece, Map<Piece, Location> ownerMap) {
-		board.remove(ownerMap.remove(piece));
-	}
-	
 	public void game(Player rPlayer, Player bPlayer, boolean printBoard)
 	{
 		rPlayer.setRedPlayer();
@@ -68,34 +73,43 @@ public class Game {
 		{
 			if (printBoard)
 				System.out.println(boardString(board));
+
 			Player currPlayer;
-			Map<Piece, Location> myPieces, oppPieces;
-			if (redTurn){
+			if (turn.equals(PlayerEnum.RED)){
 				currPlayer = rPlayer;
-				myPieces = redPlayer;
-				oppPieces = bluePlayer;
 			}
 			else {
 				currPlayer = bPlayer;
-				myPieces = bluePlayer;
-				oppPieces = redPlayer;
 			}
 			
-			Piece piece = null;
-			while (piece == null)
+			Action action = null;
+			List<Location> myLocs = board.getPlayerLocations(turn);
+			List<Location> oppLoc = board.getPlayerLocations(turn.opposite());
+			
+			while (action == null)
 			{
-				piece = currPlayer.getMove(myPieces, oppPieces, board, false);
-				if (!myPieces.containsKey(piece))
-					piece = null;
+				action = currPlayer.getAction(myLocs, oppLoc, board, false);
 			}
-			Location destination = currPlayer.moveLoc();
-			while (!move(piece, destination))
+			while (!move(action))
 			{
-				piece = currPlayer.getMove(myPieces, oppPieces, board, true);
-				destination = currPlayer.moveLoc();
+				action = currPlayer.getAction(myLocs, oppLoc, board, true);
 			}
 			
-			redTurn = !redTurn;
+			if (!gameOver)
+				turn = turn.opposite();
+			else
+			{
+				if (turn.equals(PlayerEnum.RED))
+				{
+					rPlayer.wins();
+					bPlayer.loses();
+				}
+				else
+				{
+					bPlayer.wins();
+					rPlayer.loses();
+				}
+			}
 		}
 	}
 	
@@ -104,7 +118,10 @@ public class Game {
 		StringBuilder sb = new StringBuilder();
 		sb.append("  ");
 		for (int i = 0; i < 10; i++)
+		{
+			sb.append(' ');
 			sb.append(i);
+		}
 		sb.append('\n');
 		for (int i = 0; i < 10; i++)
 		{
@@ -112,12 +129,15 @@ public class Game {
 			sb.append(':');
 			for (int j = 0; j < 10; j++)
 			{
-				Piece piece = board.getPiece(new Location(i, j));
+				Piece piece = board.board[i][j];
 				if (piece == null)
-					sb.append('_');
+					sb.append(" _");
+				else if (piece.isWater())
+					sb.append(" W");
 				else
 				{
-					if (piece.revealed || ((redTurn && piece.redOwner()) || (!redTurn && piece.blueOwner())) || piece.pieceType().equals(Pieces.WATER))
+					sb.append(piece.owner().getType());
+					if (piece.canBeSeen(turn))
 					{
 						sb.append(piece.pieceType().pieceType());
 					} else
@@ -130,7 +150,10 @@ public class Game {
 		}
 		sb.append("  ");
 		for (int i = 0; i < 10; i++)
+		{
+			sb.append(' ');
 			sb.append(i);
+		}
 		return sb.toString();
 	}
 }

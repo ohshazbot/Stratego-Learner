@@ -1,18 +1,18 @@
 package stratego.learner.pieces;
 
 public enum Pieces{
-	MARSHALL('9'), 
-	GENERAL('8'), 
-	COLONEL('7'), 
-	MAJOR('6'), 
+	MARSHALL('1'), 
+	GENERAL('2'), 
+	COLONEL('3'), 
+	MAJOR('4'), 
 	CAPTAIN('5'), 
-	LIEUTENANT('4'), 
-	SERGEANT('3'), 
-	MINER('2'), 
-	SCOUT('1'), 
+	LIEUTENANT('6'), 
+	SERGEANT('7'), 
+	MINER('8'), 
+	SCOUT('9'), 
 	SPY('S'), 
 	BOMB('B'), 
-	FLAG('*'),
+	FLAG('F'),
 	WATER('W');
 	
 	char rank;

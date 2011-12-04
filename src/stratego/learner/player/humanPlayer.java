@@ -3,7 +3,7 @@ package stratego.learner.player;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Map;
+import java.util.List;
 
 import stratego.learner.board.Board;
 import stratego.learner.board.Location;
@@ -11,12 +11,21 @@ import stratego.learner.pieces.Piece;
 import stratego.learner.pieces.Pieces;
 
 public class HumanPlayer implements Player {
-	Location destination;
 	boolean redPlayer;
 	
 	@Override
-	public Piece getMove(Map<Piece, Location> myPieces,
-			Map<Piece, Location> oppPieces, Board board, boolean redo) {
+	public void setRedPlayer() {
+		redPlayer = true;
+	}
+
+	@Override
+	public void setBluePlayer() {
+		redPlayer = false;
+	}
+
+	@Override
+	public Action getAction(List<Location> myPieces, List<Location> oppPieces,
+			Board board, boolean redo) {
 		System.out.println("\nWhich piece would you like to move and move it where?");
 		System.out.println("Please provide source row,col destionation row,col");
 		BufferedReader br = new BufferedReader( new InputStreamReader(System.in));
@@ -27,10 +36,10 @@ public class HumanPlayer implements Player {
 			Location source = new Location(Integer.parseInt(src[0]),Integer.parseInt(src[1]));
 
 			String[] dest = moves[1].split(",");
-			destination = new Location(Integer.parseInt(dest[0]),Integer.parseInt(dest[1]));
+			Location destination = new Location(Integer.parseInt(dest[0]),Integer.parseInt(dest[1]));
 			
-			Piece piece = board.getPiece(source);
-			if (piece == null || !myPieces.containsKey(piece))
+			Piece piece = board.get(source);
+			if (piece == null || !myPieces.contains(source))
 			{
 				System.out.println("You selected in invalid piece of " + piece + " at " + source);
 				piece = null;
@@ -41,7 +50,7 @@ public class HumanPlayer implements Player {
 				piece = null;
 			}
 
-			return board.getPiece(source);
+			return new Action(source, destination);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -50,18 +59,13 @@ public class HumanPlayer implements Player {
 	}
 
 	@Override
-	public Location moveLoc() {
-		return destination;
+	public void wins() {
+		System.out.println("You win");
 	}
 
 	@Override
-	public void setRedPlayer() {
-		redPlayer = true;
-	}
-
-	@Override
-	public void setBluePlayer() {
-		redPlayer = false;
+	public void loses() {
+		System.out.println("You lose");
 	}
 
 }

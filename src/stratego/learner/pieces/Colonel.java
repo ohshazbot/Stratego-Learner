@@ -1,10 +1,12 @@
 package stratego.learner.pieces;
 
+import stratego.learner.board.PlayerEnum;
+
 
 public class Colonel extends Piece {
 
-	public Colonel(int pieceNumber, boolean redPlayer) {
-		super(pieceNumber, redPlayer);
+	public Colonel(PlayerEnum own) {
+		super(own);
 	}
 
 	@Override

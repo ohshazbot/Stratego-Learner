@@ -5,32 +5,35 @@ import java.util.List;
 
 import stratego.learner.board.Board;
 import stratego.learner.board.Location;
+import stratego.learner.board.PlayerEnum;
 
 public abstract class Piece {
 	boolean onBoard = true;
 	public boolean revealed = false;
-	private int pieceNumber;
-	private boolean redPlayer;
+	private PlayerEnum owner;
 
-	public Piece(int pieceNumber, boolean redOwner) {
-		this.pieceNumber = pieceNumber;
-		redPlayer = redOwner;
+	public Piece(PlayerEnum own) {
+		owner = own;
+	}
+
+	protected Piece() {
+		// TODO Auto-generated constructor stub
 	}
 
 	public boolean redOwner() {
 		if (pieceType().equals(Pieces.WATER))
 			return false;
-		return redPlayer;
+		return owner.equals(PlayerEnum.RED);
 	}
 
 	public boolean blueOwner() {
 		if (pieceType().equals(Pieces.WATER))
 			return false;
-		return !redPlayer;
+		return owner.equals(PlayerEnum.BLUE);
 	}
-
-	public int hashCode() {
-		return pieceNumber;
+	
+	public PlayerEnum owner() {
+		return owner;
 	}
 
 	public boolean equals(Piece otherPiece) {
@@ -56,9 +59,9 @@ public abstract class Piece {
 		}
 
 		int compare = this.pieceType().compareTo(defender.pieceType());
-		if (compare > 0)
+		if (compare < 0)
 			return new Result(true, false);
-		else if (compare < 0)
+		else if (compare > 0)
 			return new Result(false, true);
 		else {
 			return new Result(false, false);
@@ -98,50 +101,56 @@ public abstract class Piece {
 		return toRet;
 	}
 
-	public boolean canMoveHere(Location destination, Location source,
+	public boolean canMoveHere(Location source, Location destination,
 			Board board) {
 		if (!canMove())
 			return false;
-		if (destination.isOrthogonal(source, !pieceType().equals(Pieces.SCOUT)))
+		if (source.isOrthogonal(destination, !pieceType().equals(Pieces.SCOUT)))
 			return true;
 		return false;
 	}
 
-	public static Piece makePiece(Pieces pieceType, int pieceNumber,
-			boolean redOwner) {
+	public static Piece makePiece(Pieces pieceType, PlayerEnum owner) {
 		switch (pieceType) {
 		case WATER:
 			return null;
 		case MARSHALL:
-			return new Marshall(pieceNumber, redOwner);
+			return new Marshall(owner);
 		case GENERAL:
-			return new General(pieceNumber, redOwner);
+			return new General(owner);
 		case COLONEL:
-			return new Colonel(pieceNumber, redOwner);
+			return new Colonel(owner);
 		case MAJOR:
-			return new Major(pieceNumber, redOwner);
+			return new Major(owner);
 		case CAPTAIN:
-			return new Captain(pieceNumber, redOwner);
+			return new Captain(owner);
 		case LIEUTENANT:
-			return new Lieutenant(pieceNumber, redOwner);
+			return new Lieutenant(owner);
 		case SERGEANT:
-			return new Sergeant(pieceNumber, redOwner);
+			return new Sergeant(owner);
 		case MINER:
-			return new Miner(pieceNumber, redOwner);
+			return new Miner(owner);
 		case SCOUT:
-			return new Scout(pieceNumber, redOwner);
+			return new Scout(owner);
 		case SPY:
-			return new Spy(pieceNumber, redOwner);
+			return new Spy(owner);
 		case BOMB:
-			return new Bomb(pieceNumber, redOwner);
+			return new Bomb(owner);
 		case FLAG:
-			return new Flag(pieceNumber, redOwner);
+			return new Flag(owner);
 		}
 		return null;
 	}
 
-	public String toString() {
-		return pieceType().name() + "- #" + pieceNumber + ". Alive? " + onBoard
-				+ " owner is " + (redPlayer ? "red." : "blue.");
+	public boolean isWater() {
+		return pieceType().equals(Pieces.WATER);
+	}
+
+	public boolean canBeSeen(PlayerEnum turn) {
+		if (revealed)
+			return true;
+		if (owner.equals(turn))
+			return true;
+		return false;
 	}
 }

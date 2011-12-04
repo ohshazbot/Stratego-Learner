@@ -1,10 +1,12 @@
 package stratego.learner.pieces;
 
+import stratego.learner.board.PlayerEnum;
+
 
 public class Marshall extends Piece {
 
-	public Marshall(int pieceNumber, boolean redPlayer) {
-		super(pieceNumber, redPlayer);
+	public Marshall(PlayerEnum own) {
+		super(own);
 	}
 
 	@Override

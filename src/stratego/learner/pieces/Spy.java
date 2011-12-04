@@ -1,10 +1,12 @@
 package stratego.learner.pieces;
 
+import stratego.learner.board.PlayerEnum;
+
 
 public class Spy extends Piece {
 
-	public Spy(int pieceNumber, boolean redPlayer) {
-		super(pieceNumber, redPlayer);
+	public Spy(PlayerEnum own) {
+		super(own);
 	}
 
 	@Override

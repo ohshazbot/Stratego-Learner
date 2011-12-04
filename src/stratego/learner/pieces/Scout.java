@@ -4,12 +4,13 @@ import java.util.List;
 
 import stratego.learner.board.Board;
 import stratego.learner.board.Location;
+import stratego.learner.board.PlayerEnum;
 
 
 public class Scout extends Piece {
 
-	public Scout(int pieceNumber, boolean redPlayer) {
-		super(pieceNumber, redPlayer);
+	public Scout(PlayerEnum own) {
+		super(own);
 	}
 
 	@Override

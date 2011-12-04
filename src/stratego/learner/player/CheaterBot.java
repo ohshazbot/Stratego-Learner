@@ -1,42 +1,49 @@
 package stratego.learner.player;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 
 import stratego.learner.board.Board;
 import stratego.learner.board.Location;
-import stratego.learner.pieces.Piece;
+import stratego.learner.board.PlayerEnum;
 import stratego.learner.pieces.Pieces;
 
 public class CheaterBot implements Player {
-	boolean redPlayer;
-	Location loc;
+	PlayerEnum player;
+
 	@Override
 	public void setRedPlayer() {
-		redPlayer = true;
+		player = PlayerEnum.RED;
 	}
 
 	@Override
 	public void setBluePlayer() {
-		redPlayer = false;
+		player = PlayerEnum.BLUE;
+	}
+
+	private Location findFlag(List<Location> oppPieces, Board board) {
+		for (Location loc : oppPieces)
+		{
+			if (board.get(loc).pieceType().equals(Pieces.FLAG))
+				return loc;
+		}
+		return null;
 	}
 
 	@Override
-	public Piece getMove(Map<Piece, Location> myPieces,
-			Map<Piece, Location> oppPieces, Board board, boolean redo) {
-		Location flag = findFlag(oppPieces);
-		SortedMap<Integer, LinkedHashMap<Piece, Location>> pieces = board.getPiecesByDistance(myPieces, flag);
-		Piece p = null;
+	public Action getAction(List<Location> myPieces, List<Location> oppPieces,
+			Board board, boolean redo) {
+		Location flag = findFlag(oppPieces, board);
+		SortedMap<Integer, LinkedHashMap<Location, Location>> pieces = board.getPiecesByDistance(myPieces, flag);
 		
-		for (LinkedHashMap<Piece, Location> list : pieces.values())
+		for (LinkedHashMap<Location, Location> list : pieces.values())
 		{
-			for (Entry<Piece, Location> entry : list.entrySet())
+			for (Entry<Location, Location> entry : list.entrySet())
 			{
-				p = entry.getKey();
 				Location offset = entry.getValue();
-				Location myLoc = myPieces.get(p);
+				Location myLoc = entry.getKey();
 				//TODO Scouts can move infinite
 				int neg = -1;
 				int pos = 1;
@@ -45,35 +52,30 @@ public class CheaterBot implements Player {
 					neg = 1;
 					pos = -1;
 				}
-				if (offset.ycord != 0 && board.canOccupy(myLoc.xcord, myLoc.ycord+(offset.ycord > 0? pos:neg), redPlayer))
+				if (offset.ycord != 0 && board.canOccupy(myLoc.xcord, myLoc.ycord+(offset.ycord > 0? pos:neg), player))
 				{
-					loc = new Location(myLoc.xcord, myLoc.ycord+(offset.ycord > 0? pos:neg));
-					return p;
+					Location dest = new Location(myLoc.xcord, myLoc.ycord+(offset.ycord > 0? pos:neg));
+					return new Action(myLoc, dest);
 				}
-				if (offset.xcord != 0 && board.canOccupy(myLoc.xcord+(offset.xcord > 0? pos : neg), myLoc.ycord, redPlayer))
+				if (offset.xcord != 0 && board.canOccupy(myLoc.xcord+(offset.xcord > 0? pos : neg), myLoc.ycord, player))
 				{
-					loc = new Location(myLoc.xcord+(offset.xcord > 0? pos : neg), myLoc.ycord);
-					return p;
+					Location dest = new Location(myLoc.xcord+(offset.xcord > 0? pos : neg), myLoc.ycord);
+					return new Action(myLoc, dest);
 				}
 			}
 		}
 		// Return a piece to trigger boolean 
-		return p;
-		
-	}
-
-	private Location findFlag(Map<Piece, Location> oppPieces) {
-		for (Entry<Piece, Location> entry : oppPieces.entrySet())
-		{
-			if (entry.getKey().pieceType().equals(Pieces.FLAG))
-				return entry.getValue();
-		}
-		return null;
+		return new Action(myPieces.get(0), myPieces.get(0));
 	}
 
 	@Override
-	public Location moveLoc() {
-		return loc;
+	public void wins() {
+		System.out.println("Cheatbot wins");
+	}
+
+	@Override
+	public void loses() {
+		System.out.println("Cheatbot loses");
 	}
 
 }

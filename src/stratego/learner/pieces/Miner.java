@@ -1,10 +1,12 @@
 package stratego.learner.pieces;
 
+import stratego.learner.board.PlayerEnum;
+
 
 public class Miner extends Piece {
 
-	public Miner(int pieceNumber, boolean redPlayer) {
-		super(pieceNumber, redPlayer);
+	public Miner(PlayerEnum own) {
+		super(own);
 	}
 
 	@Override
