@@ -1,5 +1,6 @@
 package stratego.learner.board;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -295,6 +296,61 @@ public class Board implements Map<Location, Piece> {
 		if (!p.owner().equals(player))
 			return true;
 		return false;
+	}
+
+	public List<Location> occupyLocations(Location pieceLoc, PlayerEnum player) {
+		List<Location> toRet = new ArrayList<Location>();
+		
+		Piece piece = get(pieceLoc);
+		int distance = 1;
+		if (piece.pieceType().equals(Pieces.SCOUT))
+			distance = Math.max(xDim, yDim);
+		
+		for (int i = 1; i <= distance; i++)
+		{
+			if (canOccupy(pieceLoc.addX(i), player))
+			{
+				toRet.add(pieceLoc.addX(i));
+			}
+			else
+				break;
+		}
+		
+		for (int i = 1; i <= distance; i++)
+		{
+			if (canOccupy(pieceLoc.addX(-1*i), player))
+			{
+				toRet.add(pieceLoc.addX(-1*i));
+			}
+			else
+				break;
+		}
+		
+		for (int i = 1; i <= distance; i++)
+		{
+			if (canOccupy(pieceLoc.addY(i), player))
+			{
+				toRet.add(pieceLoc.addY(i));
+			}
+			else
+				break;
+		}
+		
+		for (int i = 1; i <= distance; i++)
+		{
+			if (canOccupy(pieceLoc.addY(-1*i), player))
+			{
+				toRet.add(pieceLoc.addY(-1*i));
+			}
+			else
+				break;
+		}
+		
+		return toRet;
+	}
+
+	private boolean canOccupy(Location loc, PlayerEnum player) {
+		return canOccupy(loc.xcord, loc.ycord, player);
 	}
 	
 	

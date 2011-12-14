@@ -83,15 +83,19 @@ public class Game {
 			}
 			
 			Action action = null;
-			List<Location> myLocs = board.getPlayerLocations(turn);
-			List<Location> oppLoc = board.getPlayerLocations(turn.opposite());
+			List<Location> myLocs;
+			List<Location> oppLoc;
 			
 			while (action == null)
 			{
+				myLocs = board.getPlayerLocations(turn);
+				oppLoc = board.getPlayerLocations(turn.opposite());
 				action = currPlayer.getAction(myLocs, oppLoc, board, false);
 			}
 			while (!move(action))
 			{
+				myLocs = board.getPlayerLocations(turn);
+				oppLoc = board.getPlayerLocations(turn.opposite());
 				action = currPlayer.getAction(myLocs, oppLoc, board, true);
 			}
 			

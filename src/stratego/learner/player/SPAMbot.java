@@ -1,20 +1,105 @@
 package stratego.learner.player;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 import stratego.learner.board.Board;
 import stratego.learner.board.Location;
-import stratego.learner.pieces.Piece;
-import stratego.learner.pieces.Pieces;
 
 public class SPAMbot implements Player {
+	public class BAW {
+		public byte[] bytes;
+		
+		public BAW(byte[] myBytes)
+		{
+			bytes = myBytes;
+		}
+		
+		public boolean equals(Object other)
+		{
+			if (other instanceof BAW)
+			{
+				return Arrays.equals(bytes, ((BAW) other).bytes);
+			}
+			return false;
+		}
+		
+		public int hashCode()
+		{
+			return Arrays.hashCode(bytes);
+		}
+	}
 	boolean redPlayer;
+	boolean training;
+	Map<BAW, Double> qMap;
 	
+	public SPAMbot(boolean trainer, Map<BAW, Double> qMatrix)
+	{
+		training = trainer;
+		qMap = qMatrix;
+	}
+	
+	public SPAMbot(boolean trainer, String checkPointFile) throws Base64DecodingException, IOException
+	{
+		training = trainer;
+		qMap = parseFile(checkPointFile);
+	}
+	
+	private Map<BAW, Double> parseFile(String checkPointFile) throws IOException, Base64DecodingException {
+		Map<BAW, Double> toRet = new HashMap<BAW, Double>();
+		BufferedReader br;
+		
+		try {
+			br = new BufferedReader(new FileReader(checkPointFile));
+		} catch (FileNotFoundException e) {
+			System.out.println("File not found, starting from scratch");
+			return toRet;
+		}
+		
+		String line;
+		while ((line = br.readLine()) != null)
+		{
+			String[] pieces = line.split(",");
+			BAW key = new BAW(Base64.decode(pieces[0]));
+			Double value = Double.parseDouble(pieces[1]);
+			toRet.put(key, value);
+		}
+		
+		return toRet;
+	}
+	
+	public Map<BAW, Double> getMap()
+	{
+		return qMap;
+	}
+	
+	public boolean checkPointMap(String file) throws IOException
+	{
+		File f = new File(file);
+		if (f.exists())
+			return false;
+		
+		FileWriter fw = new FileWriter(f);
+		for (Entry<BAW, Double> entry : qMap.entrySet())
+		{
+			fw.write(Base64.encode(entry.getKey().bytes)+","+Double.toHexString(entry.getValue()));
+		}
+		return true;
+	}
+
 	@Override
 	public void setRedPlayer() {
 		redPlayer = true;

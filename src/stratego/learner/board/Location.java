@@ -50,4 +50,13 @@ public class Location {
 	{
 		return "["+xcord+","+ycord+"]";
 	}
+	
+	public Location addX(int i) {
+		return new Location(xcord+i, ycord);
+	}
+	
+	public Location addY(int i) {
+		return new Location(xcord, ycord+i);
+	}
+
 }
