@@ -10,6 +10,7 @@ import stratego.learner.board.PlayerEnum;
 public abstract class Piece {
 	boolean onBoard = true;
 	public boolean revealed = false;
+	public boolean moved = false;
 	private PlayerEnum owner;
 
 	public Piece(PlayerEnum own) {
@@ -152,5 +153,9 @@ public abstract class Piece {
 		if (owner.equals(turn))
 			return true;
 		return false;
+	}
+
+	public void moving() {
+		moved = true;
 	}
 }

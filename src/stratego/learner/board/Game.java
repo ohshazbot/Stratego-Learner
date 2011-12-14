@@ -61,6 +61,7 @@ public class Game {
 	}
 
 	private void movePiece(Action act) throws InvalidLocationException {
+		board.get(act.src).moving();
 		Location curr = act.src;
 		board.move(curr, act.dest);
 	}

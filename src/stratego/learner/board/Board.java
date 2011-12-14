@@ -302,6 +302,8 @@ public class Board implements Map<Location, Piece> {
 		List<Location> toRet = new ArrayList<Location>();
 		
 		Piece piece = get(pieceLoc);
+		if (!piece.canMove())
+			return toRet;
 		int distance = 1;
 		if (piece.pieceType().equals(Pieces.SCOUT))
 			distance = Math.max(xDim, yDim);

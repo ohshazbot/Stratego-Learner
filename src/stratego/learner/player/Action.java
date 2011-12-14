@@ -9,4 +9,17 @@ public class Action {
 	}
 	public Location src;
 	public Location dest;
+	
+	public int hashCode()
+	{
+		return src.hashCode() ^ dest.hashCode();
+	}
+	
+	public boolean equals(Object obj)
+	{
+		if (! (obj instanceof Action))
+			return false;
+		Action other = (Action) obj;
+		return src.equals(other.src) && dest.equals(other.dest);
+	}
 }
