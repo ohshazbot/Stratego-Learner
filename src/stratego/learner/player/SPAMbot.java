@@ -24,48 +24,33 @@ import stratego.learner.board.Board;
 import stratego.learner.board.Location;
 import stratego.learner.board.PlayerEnum;
 import stratego.learner.pieces.Piece;
+import stratego.learner.pieces.Pieces;
 
 public class SPAMbot implements Player {
-	public class BAW {
-		public byte[] bytes;
-
-		public BAW(byte[] myBytes)
-		{
-			bytes = myBytes;
-		}
-
-		public boolean equals(Object other)
-		{
-			if (other instanceof BAW)
-			{
-				return Arrays.equals(bytes, ((BAW) other).bytes);
-			}
-			return false;
-		}
-
-		public int hashCode()
-		{
-			return Arrays.hashCode(bytes);
-		}
-	}
 	PlayerEnum player;
 	boolean training;
-	Map<BAW, Double> qMap;
-
-	public SPAMbot(boolean trainer, Map<BAW, Double> qMatrix)
+	Map<Integer, Double> qMap;
+	double learningRate;
+	double discountRate;
+	
+	public SPAMbot(boolean trainer, Map<Integer, Double> qMatrix, double lr, double dr)
 	{
 		training = trainer;
 		qMap = qMatrix;
+		learningRate = lr;
+		discountRate = dr;
 	}
 
-	public SPAMbot(boolean trainer, String checkPointFile) throws Base64DecodingException, IOException
+	public SPAMbot(boolean trainer, String checkPointFile, double lr, double dr) throws Base64DecodingException, IOException
 	{
 		training = trainer;
 		qMap = parseFile(checkPointFile);
+		learningRate = lr;
+		discountRate = dr;
 	}
 
-	private Map<BAW, Double> parseFile(String checkPointFile) throws IOException, Base64DecodingException {
-		Map<BAW, Double> toRet = new HashMap<BAW, Double>();
+	private Map<Integer, Double> parseFile(String checkPointFile) throws IOException, Base64DecodingException {
+		Map<Integer, Double> toRet = new HashMap<Integer, Double>();
 		BufferedReader br;
 
 		try {
@@ -79,7 +64,7 @@ public class SPAMbot implements Player {
 		while ((line = br.readLine()) != null)
 		{
 			String[] pieces = line.split(",");
-			BAW key = new BAW(Base64.decode(pieces[0]));
+			Integer key = new Integer(Integer.parseInt(pieces[0]));
 			Double value = Double.parseDouble(pieces[1]);
 			toRet.put(key, value);
 		}
@@ -87,7 +72,7 @@ public class SPAMbot implements Player {
 		return toRet;
 	}
 
-	public Map<BAW, Double> getMap()
+	public Map<Integer, Double> getMap()
 	{
 		return qMap;
 	}
@@ -99,9 +84,9 @@ public class SPAMbot implements Player {
 			return false;
 
 		FileWriter fw = new FileWriter(f);
-		for (Entry<BAW, Double> entry : qMap.entrySet())
+		for (Entry<Integer, Double> entry : qMap.entrySet())
 		{
-			fw.write(Base64.encode(entry.getKey().bytes)+","+Double.toHexString(entry.getValue()));
+			fw.write(entry.getKey().intValue()+","+Double.toHexString(entry.getValue()));
 		}
 		return true;
 	}
@@ -119,47 +104,64 @@ public class SPAMbot implements Player {
 	@Override
 	public Action getAction(List<Location> myPieces, List<Location> oppPieces,
 			Board board, boolean redo) {
+		Map<Location, List<Location>> possibleActions = getAllActions(myPieces, oppPieces, board);
+		Map<Action, List<Integer>> actionMap = getAllPossibleNextStates(possibleActions, myPieces, oppPieces, board);
 
-		if (!training)
+		Double maxQ = Double.MIN_VALUE;
+		Set<Action> tieActions = new HashSet<Action>();
+		for (Entry<Action, List<Integer>> e : actionMap.entrySet())
 		{
-			Map<Location, List<Location>> possibleActions = getAllActions(myPieces, oppPieces, board);
-			Map<Action, List<BAW>> actionMap = getAllPossibleNextStates(possibleActions, myPieces, oppPieces, board);
-
-			Double maxQ = Double.MIN_VALUE;
-			Set<Action> tieActions = new HashSet<Action>();
-			for (Entry<Action, List<BAW>> e : actionMap.entrySet())
+			for (Integer Integer : e.getValue())
 			{
-				for (BAW baw : e.getValue())
+				Double IntegerVal = qMap.get(Integer); 
+				if (maxQ < IntegerVal)
 				{
-					Double bawVal = qMap.get(baw); 
-					if (maxQ < bawVal)
-					{
-						maxQ = bawVal;
-						tieActions.clear();
-						tieActions.add(e.getKey());
-					} else if (maxQ == bawVal)
-					{
-						tieActions.add(e.getKey());
-					}
+					maxQ = IntegerVal;
+					tieActions.clear();
+					tieActions.add(e.getKey());
+				} else if (maxQ == IntegerVal)
+				{
+					tieActions.add(e.getKey());
 				}
 			}
-
-			Random r = new Random();
-			return (Action) tieActions.toArray()[r.nextInt(tieActions.size())];
 		}
+
+		Random r = new Random();
+		Action taken = (Action) tieActions.toArray()[r.nextInt(tieActions.size())];
+		
+		Integer current = encode(myPieces,oppPieces);
+		
+		if (training)
+		{			
+			qMap.put(current, (1 - learningRate) * qMap.get(current) + (learningRate) * (reward(taken, oppPieces, board) + discountRate * maxQ) );
+		}
+		
+		return taken;
 	}
 
-	private Map<Action, List<BAW>> getAllPossibleNextStates(
+	private double reward(Action taken, List<Location> oppPieces, Board board) {
+		if (board.get(taken.dest).pieceType() == Pieces.FLAG)
+			return 100;
+		return 0;
+	}
+
+	private Integer encode(List<Location> myPieces, List<Location> oppPieces) {
+		//first iterate through my pieces to see if i can attack something of theirs
+		Set<String> attackers = new HashSet<String>()
+		return null;
+	}
+
+	private Map<Action, List<Integer>> getAllPossibleNextStates(
 			Map<Location, List<Location>> possibleActions,
 			List<Location> myPieces, List<Location> oppPieces, Board board) {
-		Map<Action, List<BAW>> toRet = new HashMap<Action, List<BAW>>();
+		Map<Action, List<Integer>> toRet = new HashMap<Action, List<Integer>>();
 		
 		for (Entry<Location, List<Location>> e : possibleActions.entrySet())
 		{
 			Location src = e.getKey();
 			for (Location dest : e.getValue())
 			{
-			blargh	
+				//blargh	
 			}
 		}
 		
