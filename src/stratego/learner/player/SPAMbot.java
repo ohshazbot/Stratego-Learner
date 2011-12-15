@@ -185,7 +185,7 @@ public class SPAMbot implements Player {
 			}
 		}
 		int answer = 0; 
-		double mult;
+		int mult;
 		boolean mine;
 		for(Entry<String,Set<Piece>> entry: attackers.entrySet())
 		{
@@ -200,54 +200,54 @@ public class SPAMbot implements Player {
 					if(!p.revealed)
 					{
 						if(p.moved)
-							answer += mult * 4096;
+							answer |= mult * 4096;
 						else
-							answer += mult * 8192;
+							answer |= mult * 8192;
 					}
 				}
 				else{
 				switch (p.pieceType()) {
 				case WATER:
-					answer += mult * 0;
+					answer |= mult * 0;
 					break;
 				case MARSHALL:
-					answer += mult * 1;
+					answer |= mult * 1;
 					break;
 				case GENERAL:
-					answer += mult * 2;
+					answer |= mult * 2;
 					break;
 				case COLONEL:
-					answer += mult * 4;
+					answer |= mult * 4;
 					break;
 				case MAJOR:
-					answer += mult * 8;
+					answer |= mult * 8;
 					break;
 				case CAPTAIN:
-					answer += mult * 16;
+					answer |= mult * 16;
 					break;
 				case LIEUTENANT:
-					answer += mult * 32;
+					answer |= mult * 32;
 					break;
 				case SERGEANT:
-					answer += mult * 64;
+					answer |= mult * 64;
 					break;
 				case MINER:
-					answer += mult * 128;
+					answer |= mult * 128;
 					break;
 				case SCOUT:
-					answer += mult * 256;
+					answer |= mult * 256;
 					break;
 				case SPY:
-					answer += mult * 512;
+					answer |= mult * 512;
 					break;
 				case BOMB:
-					answer += mult * 1024;
+					answer |= mult * 1024;
 					break;
 				case FLAG:
-					answer += mult * 2048;
+					answer |= mult * 2048;
 					break;
 				default:
-					answer += mult * 4096;
+					answer |= mult * 4096;
 					break;
 				}
 				}
