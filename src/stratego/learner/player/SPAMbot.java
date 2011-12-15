@@ -162,7 +162,7 @@ public class SPAMbot implements Player {
 	private double reward(Action taken, List<Location> myPieces, List<Location> oppPieces, Board board) {
 		if (board.get(taken.dest).pieceType() == Pieces.FLAG)
 			return 100;
-		for(Entry<Action, List<Integer>> entry : getAllPossibleNextStates(getAllActions(myPieces, oppPieces, board), myPieces, oppPieces, board).entrySet())
+		for(Entry<Action, List<Integer>> entry : getAllPossibleNextStates(getAllActions(myPieces, oppPieces, board, false), myPieces, oppPieces, board).entrySet())
 		{
 			for(Integer state: entry.getValue())
 				if (state.intValue() % 2 == 1)
