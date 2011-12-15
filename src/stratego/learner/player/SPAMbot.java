@@ -23,8 +23,20 @@ import com.sun.org.apache.xml.internal.security.utils.Base64;
 import stratego.learner.board.Board;
 import stratego.learner.board.Location;
 import stratego.learner.board.PlayerEnum;
+import stratego.learner.pieces.Bomb;
+import stratego.learner.pieces.Captain;
+import stratego.learner.pieces.Colonel;
+import stratego.learner.pieces.Flag;
+import stratego.learner.pieces.General;
+import stratego.learner.pieces.Lieutenant;
+import stratego.learner.pieces.Major;
+import stratego.learner.pieces.Marshall;
+import stratego.learner.pieces.Miner;
 import stratego.learner.pieces.Piece;
 import stratego.learner.pieces.Pieces;
+import stratego.learner.pieces.Scout;
+import stratego.learner.pieces.Sergeant;
+import stratego.learner.pieces.Spy;
 
 public class SPAMbot implements Player {
 	PlayerEnum player;
@@ -129,7 +141,7 @@ public class SPAMbot implements Player {
 		Random r = new Random();
 		Action taken = (Action) tieActions.toArray()[r.nextInt(tieActions.size())];
 		
-		Integer current = encode(myPieces,oppPieces);
+		Integer current = encode(myPieces,oppPieces, board);
 		
 		if (training)
 		{			
@@ -145,10 +157,106 @@ public class SPAMbot implements Player {
 		return 0;
 	}
 
-	private Integer encode(List<Location> myPieces, List<Location> oppPieces) {
+	private Integer encode(List<Location> myPieces, List<Location> oppPieces, Board board) {
 		//first iterate through my pieces to see if i can attack something of theirs
-		Set<String> attackers = new HashSet<String>()
-		return null;
+		Map<String,Set<Piece>> attackers = new HashMap<String,Set<Piece>>();
+		attackers.put(player.name(), new HashSet<Piece>());
+		attackers.put(player.opposite().name(), new HashSet<Piece>());
+		for(Location loc : myPieces)
+		{
+			for(Location newloc : board.occupyLocations(loc, player))
+			{
+				Piece p = board.get(newloc.xcord, newloc.ycord);
+				if(p != null && !p.isWater())
+				{
+					attackers.get(player.name()).add(board.get(loc.xcord, loc.ycord));
+					attackers.get(player.opposite().name()).add(p);
+				}
+			}
+		}
+		//then iterate through theirs to see if they can hit mine, adding to set all along
+		for(Location loc : oppPieces)
+		{
+			for(Location newloc : board.occupyLocations(loc, player))
+			{
+				Piece p = board.get(newloc.xcord, newloc.ycord);
+				if(p != null && !p.isWater())
+				{
+					attackers.get(player.opposite().name()).add(board.get(loc.xcord, loc.ycord));
+					attackers.get(player.name()).add(p);
+				}
+			}
+		}
+		int answer = 0; 
+		double mult;
+		boolean mine;
+		for(Entry<String,Set<Piece>> entry: attackers.entrySet())
+		{
+			mine =  entry.getKey().equals(player.name());
+			mult = mine ? 1 : 4096;
+			
+			for(Piece p : entry.getValue())
+			{
+				char type = p.pieceType().pieceType();
+				if (!mine)
+				{
+					if(!p.revealed)
+					{
+						if(p.moved)
+							answer += mult * 4096;
+						else
+							answer += mult * 8192;
+					}
+				}
+				else{
+				switch (p.pieceType()) {
+				case WATER:
+					answer += mult * 0;
+					break;
+				case MARSHALL:
+					answer += mult * 1;
+					break;
+				case GENERAL:
+					answer += mult * 2;
+					break;
+				case COLONEL:
+					answer += mult * 4;
+					break;
+				case MAJOR:
+					answer += mult * 8;
+					break;
+				case CAPTAIN:
+					answer += mult * 16;
+					break;
+				case LIEUTENANT:
+					answer += mult * 32;
+					break;
+				case SERGEANT:
+					answer += mult * 64;
+					break;
+				case MINER:
+					answer += mult * 128;
+					break;
+				case SCOUT:
+					answer += mult * 256;
+					break;
+				case SPY:
+					answer += mult * 512;
+					break;
+				case BOMB:
+					answer += mult * 1024;
+					break;
+				case FLAG:
+					answer += mult * 2048;
+					break;
+				default:
+					answer += mult * 4096;
+					break;
+				}
+				}
+			}
+		}
+		return new Integer(answer);
 	}
 
 	private Map<Action, List<Integer>> getAllPossibleNextStates(
