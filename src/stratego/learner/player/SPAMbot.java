@@ -153,15 +153,21 @@ public class SPAMbot implements Player {
 		
 		if (training)
 		{			
-			qMap.put(current, (1 - learningRate) * qMap.get(current) + (learningRate) * (reward(taken, oppPieces, board) + discountRate * maxQ) );
+			qMap.put(current, (1 - learningRate) * qMap.get(current) + (learningRate) * (reward(taken, myPieces, oppPieces, board) + discountRate * maxQ) );
 		}
 		
 		return taken;
 	}
 
-	private double reward(Action taken, List<Location> oppPieces, Board board) {
+	private double reward(Action taken, List<Location> myPieces, List<Location> oppPieces, Board board) {
 		if (board.get(taken.dest).pieceType() == Pieces.FLAG)
 			return 100;
+		for(Entry<Action, List<Integer>> entry : getAllPossibleNextStates(getAllActions(myPieces, oppPieces, board), myPieces, oppPieces, board).entrySet())
+		{
+			for(Integer state: entry.getValue())
+				if (state.intValue() % 2 == 1)
+					return -100;
+		}
 		return 0;
 	}
 
@@ -221,7 +227,7 @@ public class SPAMbot implements Player {
 				case WATER:
 					answer |= mult * 0;
 					break;
-				case MARSHALL:
+				case FLAG:
 					answer |= mult * 1;
 					break;
 				case GENERAL:
@@ -254,11 +260,8 @@ public class SPAMbot implements Player {
 				case BOMB:
 					answer |= mult * 1024;
 					break;
-				case FLAG:
+				case MARSHALL:
 					answer |= mult * 2048;
-					break;
-				default:
-					answer |= mult * 4096;
 					break;
 				}
 				}
