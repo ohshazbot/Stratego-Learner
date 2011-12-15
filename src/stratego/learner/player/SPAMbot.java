@@ -110,10 +110,21 @@ public class SPAMbot implements Player {
 		player = PlayerEnum.BLUE;
 	}
 
+	boolean scoutsLeft;
 	@Override
 	public Action getAction(List<Location> myPieces, List<Location> oppPieces,
 			Board board, boolean redo) {
-		Map<Location, List<Location>> possibleActions = getAllActions(myPieces, oppPieces, board);
+		scoutsLeft = false;
+		for (Location l : oppPieces)
+		{
+			if (board.get(l).pieceType().equals(Pieces.SCOUT) && !board.get(l).revealed)
+			{
+				scoutsLeft = true;
+				break;
+			}
+		}
+		
+		Map<Location, List<Location>> possibleActions = getAllActions(myPieces, oppPieces, board, false);
 		Map<Action, List<Integer>> actionMap = getAllPossibleNextStates(possibleActions, myPieces, oppPieces, board);
 
 		Double maxQ = Double.MIN_VALUE;
@@ -161,7 +172,7 @@ public class SPAMbot implements Player {
 		attackers.put(player.opposite().name(), new HashSet<Piece>());
 		for(Location loc : myPieces)
 		{
-			for(Location newloc : board.occupyLocations(loc, player))
+			for(Location newloc : board.occupyLocations(loc, player, false))
 			{
 				Piece p = board.get(newloc.xcord, newloc.ycord);
 				if(p != null && !p.isWater())
@@ -174,7 +185,7 @@ public class SPAMbot implements Player {
 		//then iterate through theirs to see if they can hit mine, adding to set all along
 		for(Location loc : oppPieces)
 		{
-			for(Location newloc : board.occupyLocations(loc, player))
+			for(Location newloc : board.occupyLocations(loc, player, false))
 			{
 				Piece p = board.get(newloc.xcord, newloc.ycord);
 				if(p != null && !p.isWater())
@@ -266,19 +277,48 @@ public class SPAMbot implements Player {
 			Location src = e.getKey();
 			for (Location dest : e.getValue())
 			{
-				Board potentialBoard = new Board(board);
-				Piece mine = potentialBoard.get(src);
-				Piece opp = potentialBoard.get(dest);
-				if (opp == null || (opp.revealed && mine.attack(opp).attackerLives))
-				{
-					
-				}
-				potentialBoard.move(src, dest);
-				myPieces.remove(src);
-				myPieces.add(dest);
-				Map<Location, List<Location>> actions = getAllActions(oppPieces, myPieces, potentialBoard);
-				myPieces.remove(dest);
-				myPieces.add(src);
+				List<Board> potentialBoards = potentialBoards(board, src, dest);
+//				Piece mine = potentialBoard.get(src);
+//				Piece opp = potentialBoard.get(dest);
+//				if (opp == null || (opp.revealed && mine.attack(opp).attackerLives) || !opp.revealed)
+//				{
+//					potentialBoard.remove(src);
+//					potentialBoard.put(dest, mine);
+//					
+//					oppPieces.remove(dest);
+//					myPieces.remove(src);
+//					myPieces.add(dest);
+//					
+//					Map<Location, List<Location>> actions = getAllActions(oppPieces, myPieces, potentialBoard, false);
+//					toRet.putAll(getBest(actions, potentialBoard));
+//					
+//					myPieces.remove(dest);
+//					myPieces.add(src);
+//					oppPieces.add(dest);
+//					
+//					potentialBoard.put(dest, opp);
+//					potentialBoard.put(src, mine);
+//				}
+//				//Should put in logic to check if remaining pieces on board can kill mine
+//				if (opp != null && !opp.revealed)
+//				{
+//					// We lose
+//					potentialBoard.remove(src);
+//					myPieces.remove(src);
+//					
+//					Map<Location, List<Location>> actions = getAllActions(oppPieces, myPieces, potentialBoard, false);
+//					toRet.putAll(getBest(actions, potentialBoard));
+//
+//					// We tie
+//					potentialBoard.remove(dest);
+//					oppPieces.remove(dest);
+//					
+//					actions = getAllActions(oppPieces, myPieces, potentialBoard, false);
+//					toRet.putAll(getBest(actions, potentialBoard));
+//
+//					
+//				}
+
 
 			}
 		}
@@ -286,12 +326,29 @@ public class SPAMbot implements Player {
 		return toRet;
 	}
 
+	private List<Board> potentialBoards(Board board, Location src, Location dest) {
+		List<Board> toRet = new LinkedList<Board>();
+		Piece mine = board.get(src);
+		Piece opp = board.get(dest);
+		if (opp == null || (opp.revealed && mine.attack(opp).attackerLives) || !opp.revealed)
+		{
+			Board potentialBoard = new Board(board);
+			potentialBoard.remove(src);
+			potentialBoard.put(dest, mine);
+			// I need to use tuples, not just boards, of the potentials, I think...
+			oppPieces.remove(dest);
+			myPieces.remove(src);
+			myPieces.add(dest);
+		}
+		return toRet;
+	}
+
 	private Map<Location, List<Location>> getAllActions(List<Location> myPieces,
-			List<Location> oppPieces, Board board) {
+			List<Location> oppPieces, Board board, boolean known) {
 		Map<Location, List<Location>> toRet = new HashMap<Location, List<Location>>();
 		for (Location loc : myPieces)
 		{
-			List<Location> destinations = board.occupyLocations(loc, player);
+			List<Location> destinations = board.occupyLocations(loc, player, (!known && scoutsLeft));
 			if (destinations.size() != 0)
 				toRet.put(loc, destinations);
 		}

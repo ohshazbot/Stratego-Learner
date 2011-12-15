@@ -307,14 +307,14 @@ public class Board implements Map<Location, Piece> {
 		return false;
 	}
 
-	public List<Location> occupyLocations(Location pieceLoc, PlayerEnum player) {
+	public List<Location> occupyLocations(Location pieceLoc, PlayerEnum player, boolean treatHiddenAsScout) {
 		List<Location> toRet = new ArrayList<Location>();
 		
 		Piece piece = get(pieceLoc);
 		if (!piece.canMove())
 			return toRet;
 		int distance = 1;
-		if (piece.pieceType().equals(Pieces.SCOUT))
+		if (piece.pieceType().equals(Pieces.SCOUT) || (treatHiddenAsScout && !piece.revealed))
 			distance = Math.max(xDim, yDim);
 		
 		for (int i = 1; i <= distance; i++)

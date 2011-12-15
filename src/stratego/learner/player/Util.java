@@ -19,7 +19,7 @@ public class Util {
 			int index = r.nextInt(myPieces.size());
 			piece = myPieces.get(index);
 		
-			destinations = board.occupyLocations(piece, player);
+			destinations = board.occupyLocations(piece, player, false);
 			
 			if (destinations.size() == 0)
 			{
