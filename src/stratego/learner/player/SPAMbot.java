@@ -17,9 +17,6 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
-import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
-
 import stratego.learner.board.Board;
 import stratego.learner.board.Location;
 import stratego.learner.board.PlayerEnum;
@@ -53,7 +50,7 @@ public class SPAMbot implements Player {
 		discountRate = dr;
 	}
 
-	public SPAMbot(boolean trainer, String checkPointFile, double lr, double dr) throws Base64DecodingException, IOException
+	public SPAMbot(boolean trainer, String checkPointFile, double lr, double dr) throws NumberFormatException, IOException
 	{
 		training = trainer;
 		qMap = parseFile(checkPointFile);
@@ -61,7 +58,7 @@ public class SPAMbot implements Player {
 		discountRate = dr;
 	}
 
-	private Map<Integer, Double> parseFile(String checkPointFile) throws IOException, Base64DecodingException {
+	private Map<Integer, Double> parseFile(String checkPointFile) throws NumberFormatException, IOException  {
 		Map<Integer, Double> toRet = new HashMap<Integer, Double>();
 		BufferedReader br;
 
@@ -269,7 +266,20 @@ public class SPAMbot implements Player {
 			Location src = e.getKey();
 			for (Location dest : e.getValue())
 			{
-				//blargh	
+				Board potentialBoard = new Board(board);
+				Piece mine = potentialBoard.get(src);
+				Piece opp = potentialBoard.get(dest);
+				if (opp == null || (opp.revealed && mine.attack(opp).attackerLives))
+				{
+					
+				}
+				potentialBoard.move(src, dest);
+				myPieces.remove(src);
+				myPieces.add(dest);
+				Map<Location, List<Location>> actions = getAllActions(oppPieces, myPieces, potentialBoard);
+				myPieces.remove(dest);
+				myPieces.add(src);
+
 			}
 		}
 		

@@ -81,6 +81,15 @@ public class Board implements Map<Location, Piece> {
 		}
 	}
 
+	public Board(Board board2) {
+		xDim = board2.xDim;
+		yDim = board2.yDim;
+		board = new Piece[xDim][yDim];
+		for (int i = 0; i < xDim; i++)
+			for (int j = 0; j < yDim; j++)
+				board[i][j] = board2.board[i][j];
+	}
+
 	public void setWater(int[] x, int[] y) throws InvalidLocationException {
 		for (int i : x)
 			for (int j : y) {
