@@ -307,8 +307,8 @@ public class Board implements Map<Location, Piece> {
 		return false;
 	}
 
-	public List<Location> occupyLocations(Location pieceLoc, PlayerEnum player, boolean treatHiddenAsScout) {
-		List<Location> toRet = new ArrayList<Location>();
+	public List<LocDist> occupyLocations(Location pieceLoc, PlayerEnum player, boolean treatHiddenAsScout) {
+		List<LocDist> toRet = new ArrayList<LocDist>();
 		
 		Piece piece = get(pieceLoc);
 		if (!piece.canMove())
@@ -321,7 +321,7 @@ public class Board implements Map<Location, Piece> {
 		{
 			if (canOccupy(pieceLoc.addX(i), player))
 			{
-				toRet.add(pieceLoc.addX(i));
+				toRet.add(new LocDist(pieceLoc.addX(i), i));
 			}
 			else
 				break;
@@ -331,7 +331,7 @@ public class Board implements Map<Location, Piece> {
 		{
 			if (canOccupy(pieceLoc.addX(-1*i), player))
 			{
-				toRet.add(pieceLoc.addX(-1*i));
+				toRet.add(new LocDist(pieceLoc.addX(-1*i), i));
 			}
 			else
 				break;
@@ -341,7 +341,7 @@ public class Board implements Map<Location, Piece> {
 		{
 			if (canOccupy(pieceLoc.addY(i), player))
 			{
-				toRet.add(pieceLoc.addY(i));
+				toRet.add(new LocDist(pieceLoc.addY(i), i));
 			}
 			else
 				break;
@@ -351,7 +351,7 @@ public class Board implements Map<Location, Piece> {
 		{
 			if (canOccupy(pieceLoc.addY(-1*i), player))
 			{
-				toRet.add(pieceLoc.addY(-1*i));
+				toRet.add(new LocDist(pieceLoc.addY(-1*i), i));
 			}
 			else
 				break;

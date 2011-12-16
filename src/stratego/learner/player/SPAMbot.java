@@ -6,11 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,22 +15,13 @@ import java.util.Random;
 import java.util.Set;
 
 import stratego.learner.board.Board;
+import stratego.learner.board.GameState;
+import stratego.learner.board.LocDist;
 import stratego.learner.board.Location;
 import stratego.learner.board.PlayerEnum;
-import stratego.learner.pieces.Bomb;
-import stratego.learner.pieces.Captain;
-import stratego.learner.pieces.Colonel;
-import stratego.learner.pieces.Flag;
-import stratego.learner.pieces.General;
-import stratego.learner.pieces.Lieutenant;
-import stratego.learner.pieces.Major;
-import stratego.learner.pieces.Marshall;
-import stratego.learner.pieces.Miner;
 import stratego.learner.pieces.Piece;
+import stratego.learner.pieces.Piece.Result;
 import stratego.learner.pieces.Pieces;
-import stratego.learner.pieces.Scout;
-import stratego.learner.pieces.Sergeant;
-import stratego.learner.pieces.Spy;
 
 public class SPAMbot implements Player {
 	PlayerEnum player;
@@ -111,25 +99,44 @@ public class SPAMbot implements Player {
 	}
 
 	boolean scoutsLeft;
+	boolean spyLeft;
+	boolean minesLeft;
+	Piece bestLeft = null;
 	@Override
 	public Action getAction(List<Location> myPieces, List<Location> oppPieces,
 			Board board, boolean redo) {
 		scoutsLeft = false;
+		spyLeft = false;
+		minesLeft = false;
 		for (Location l : oppPieces)
 		{
-			if (board.get(l).pieceType().equals(Pieces.SCOUT) && !board.get(l).revealed)
+			if (!board.get(l).revealed)
 			{
-				scoutsLeft = true;
-				break;
+				if (board.get(l).pieceType().equals(Pieces.SCOUT))
+					scoutsLeft = true;
+
+				else if (board.get(l).pieceType().equals(Pieces.SPY))
+					spyLeft = true;
+				
+				else if (board.get(l).pieceType().equals(Pieces.BOMB))
+					minesLeft = true;
+				
+				else if (bestLeft == null || board.get(l).attack(bestLeft).attackerLives)
+					bestLeft = board.get(l);
 			}
 		}
+		GameState gs;
+		if (player.equals(PlayerEnum.RED))
+			gs = new GameState(board, myPieces, oppPieces);
+		else
+			gs = new GameState(board, oppPieces, myPieces);
 		
-		Map<Location, List<Location>> possibleActions = getAllActions(myPieces, oppPieces, board, false);
-		Map<Action, List<Integer>> actionMap = getAllPossibleNextStates(possibleActions, myPieces, oppPieces, board);
+		Map<Location, List<LocDist>> possibleActions = getAllActions(gs, false, player);
+		Map<Action, Set<Integer>> actionMap = getAllPossibleNextStates(possibleActions, gs);
 
 		Double maxQ = Double.MIN_VALUE;
 		Set<Action> tieActions = new HashSet<Action>();
-		for (Entry<Action, List<Integer>> e : actionMap.entrySet())
+		for (Entry<Action, Set<Integer>> e : actionMap.entrySet())
 		{
 			for (Integer Integer : e.getValue())
 			{
@@ -153,16 +160,16 @@ public class SPAMbot implements Player {
 		
 		if (training)
 		{			
-			qMap.put(current, (1 - learningRate) * qMap.get(current) + (learningRate) * (reward(taken, myPieces, oppPieces, board) + discountRate * maxQ) );
+			qMap.put(current, (1 - learningRate) * qMap.get(current) + (learningRate) * (reward(taken, gs) + discountRate * maxQ) );
 		}
 		
 		return taken;
 	}
 
-	private double reward(Action taken, List<Location> myPieces, List<Location> oppPieces, Board board) {
-		if (board.get(taken.dest).pieceType() == Pieces.FLAG)
+	private double reward(Action taken, GameState gs) {
+		if (gs.board.get(taken.dest).pieceType() == Pieces.FLAG)
 			return 100;
-		for(Entry<Action, List<Integer>> entry : getAllPossibleNextStates(getAllActions(myPieces, oppPieces, board, false), myPieces, oppPieces, board).entrySet())
+		for(Entry<Action, Set<Integer>> entry : getAllPossibleNextStates(getAllActions(gs, false, player), gs).entrySet())
 		{
 			for(Integer state: entry.getValue())
 				if (state.intValue() % 2 == 1)
@@ -178,8 +185,9 @@ public class SPAMbot implements Player {
 		attackers.put(player.opposite().name(), new HashSet<Piece>());
 		for(Location loc : myPieces)
 		{
-			for(Location newloc : board.occupyLocations(loc, player, false))
+			for(LocDist ld : board.occupyLocations(loc, player, false))
 			{
+				Location newloc = ld.loc;
 				Piece p = board.get(newloc.xcord, newloc.ycord);
 				if(p != null && !p.isWater())
 				{
@@ -191,8 +199,9 @@ public class SPAMbot implements Player {
 		//then iterate through theirs to see if they can hit mine, adding to set all along
 		for(Location loc : oppPieces)
 		{
-			for(Location newloc : board.occupyLocations(loc, player, false))
+			for(LocDist ld : board.occupyLocations(loc, player, false))
 			{
+				Location newloc = ld.loc;
 				Piece p = board.get(newloc.xcord, newloc.ycord);
 				if(p != null && !p.isWater())
 				{
@@ -211,7 +220,6 @@ public class SPAMbot implements Player {
 			
 			for(Piece p : entry.getValue())
 			{
-				char type = p.pieceType().pieceType();
 				if (!mine)
 				{
 					if(!p.revealed)
@@ -270,88 +278,204 @@ public class SPAMbot implements Player {
 		return new Integer(answer);
 	}
 
-	private Map<Action, List<Integer>> getAllPossibleNextStates(
-			Map<Location, List<Location>> possibleActions,
-			List<Location> myPieces, List<Location> oppPieces, Board board) {
-		Map<Action, List<Integer>> toRet = new HashMap<Action, List<Integer>>();
+	private Map<Action, Set<Integer>> getAllPossibleNextStates(
+			Map<Location, List<LocDist>> possibleActions, GameState gs) {
+		Map<Action, Set<Integer>> toRet = new HashMap<Action, Set<Integer>>();
 		
-		for (Entry<Location, List<Location>> e : possibleActions.entrySet())
+		for (Entry<Location, List<LocDist>> e : possibleActions.entrySet())
 		{
 			Location src = e.getKey();
-			for (Location dest : e.getValue())
+			for (LocDist dest : e.getValue())
 			{
-				List<Board> potentialBoards = potentialBoards(board, src, dest);
-//				Piece mine = potentialBoard.get(src);
-//				Piece opp = potentialBoard.get(dest);
-//				if (opp == null || (opp.revealed && mine.attack(opp).attackerLives) || !opp.revealed)
-//				{
-//					potentialBoard.remove(src);
-//					potentialBoard.put(dest, mine);
-//					
-//					oppPieces.remove(dest);
-//					myPieces.remove(src);
-//					myPieces.add(dest);
-//					
-//					Map<Location, List<Location>> actions = getAllActions(oppPieces, myPieces, potentialBoard, false);
-//					toRet.putAll(getBest(actions, potentialBoard));
-//					
-//					myPieces.remove(dest);
-//					myPieces.add(src);
-//					oppPieces.add(dest);
-//					
-//					potentialBoard.put(dest, opp);
-//					potentialBoard.put(src, mine);
-//				}
-//				//Should put in logic to check if remaining pieces on board can kill mine
-//				if (opp != null && !opp.revealed)
-//				{
-//					// We lose
-//					potentialBoard.remove(src);
-//					myPieces.remove(src);
-//					
-//					Map<Location, List<Location>> actions = getAllActions(oppPieces, myPieces, potentialBoard, false);
-//					toRet.putAll(getBest(actions, potentialBoard));
-//
-//					// We tie
-//					potentialBoard.remove(dest);
-//					oppPieces.remove(dest);
-//					
-//					actions = getAllActions(oppPieces, myPieces, potentialBoard, false);
-//					toRet.putAll(getBest(actions, potentialBoard));
-//
-//					
-//				}
-
-
+				Action act = new Action(src, dest.loc);
+				Set<Integer> states = new HashSet<Integer>();
+				
+				GameState gsPotential;
+				gsPotential = winningBoard(gs, src, dest.loc, dest.dist);
+				Map<Location, List<LocDist>> results = getAllActions(gsPotential, false, player.opposite());
+				states.addAll(getAllStates(gsPotential, results));
+				
+				gsPotential = losingBoard(gs, src, dest.loc, dest.dist);
+				if (gsPotential != null)
+				{
+					results = getAllActions(gsPotential, false, player.opposite());
+					states.addAll(getAllStates(gsPotential, results));
+				}
+				
+				gsPotential = tieingBoard(gs, src, dest.loc, dest.dist);
+				if (gsPotential != null)
+				{
+					results = getAllActions(gsPotential, false, player.opposite());
+					states.addAll(getAllStates(gsPotential, results));
+				}
+				toRet.put(act, states);
 			}
 		}
 		
 		return toRet;
 	}
 
-	private List<Board> potentialBoards(Board board, Location src, Location dest) {
-		List<Board> toRet = new LinkedList<Board>();
-		Piece mine = board.get(src);
-		Piece opp = board.get(dest);
-		if (opp == null || (opp.revealed && mine.attack(opp).attackerLives) || !opp.revealed)
+	private Set<Integer> getAllStates(GameState gs,
+			Map<Location, List<LocDist>> actions) {
+		Set<Integer> toRet = new HashSet<Integer>();
+		for (Entry<Location, List<LocDist>> e : actions.entrySet())
 		{
-			Board potentialBoard = new Board(board);
-			potentialBoard.remove(src);
-			potentialBoard.put(dest, mine);
-			// I need to use tuples, not just boards, of the potentials, I think...
-			oppPieces.remove(dest);
-			myPieces.remove(src);
-			myPieces.add(dest);
+			Location src = e.getKey();
+			for (LocDist dest : e.getValue())
+			{
+				Location l = dest.loc;
+				int dist = dest.dist;
+				
+				GameState futureGS = new GameState(gs);
+				if (futureGS.board.get(l) == null)
+				{
+					futureGS.replace(src, l);
+				} else
+				{
+					Piece s = futureGS.board.get(src);
+					Piece opp = futureGS.board.get(l);
+					
+					// If we don't know what it is, we can say it's a scout if it's moving more than 1
+					if (!s.revealed && dist > 1)
+					{
+						s = Piece.makePiece(Pieces.SCOUT, s.owner());
+						s.reveal();
+					}
+					if (s.revealed)
+					{
+						Result res = s.attack(opp);
+						if (res.attackerLives)
+							futureGS.replace(src, l);
+						else if (!res.defenderLives)
+						{
+							futureGS.remove(l);
+							futureGS.remove(src);
+						} else
+						{
+							futureGS.remove(src);
+						}
+					}
+					else
+					{
+						// 3 possibilities- win, lose, or draw
+						// win can only happen if their best could beat that unit (or a spy is on the loose)
+						Result best = bestLeft.attack(opp); 
+						if ((best.attackerLives && !best.defenderLives) || (opp.pieceType().equals(Pieces.MARSHALL) && spyLeft))
+						{
+							futureGS.replace(src, l);
+							if (player.equals(PlayerEnum.RED))
+								toRet.add(encode(gs.redPieces, gs.bluPieces, gs.board));
+							else
+								toRet.add(encode(gs.bluPieces, gs.redPieces, gs.board));
+							futureGS = new GameState(gs);
+						}
+						// draw - if their best can't even tie, then lets not waste time evaluating
+						if (!best.defenderLives)
+						{
+							futureGS.remove(l);
+							futureGS.remove(src);
+							if (player.equals(PlayerEnum.RED))
+								toRet.add(encode(gs.redPieces, gs.bluPieces, gs.board));
+							else
+								toRet.add(encode(gs.bluPieces, gs.redPieces, gs.board));
+							futureGS = new GameState(gs);							
+						}
+						
+						// lose - a defeat is pretty much always a possibilty
+						futureGS.remove(src);
+						if (player.equals(PlayerEnum.RED))
+							toRet.add(encode(gs.redPieces, gs.bluPieces, gs.board));
+						else
+							toRet.add(encode(gs.bluPieces, gs.redPieces, gs.board));
+					}
+				}
+				
+				if (player.equals(PlayerEnum.RED))
+					toRet.add(encode(gs.redPieces, gs.bluPieces, gs.board));
+				else
+					toRet.add(encode(gs.bluPieces, gs.redPieces, gs.board));
+			}
 		}
 		return toRet;
 	}
 
-	private Map<Location, List<Location>> getAllActions(List<Location> myPieces,
-			List<Location> oppPieces, Board board, boolean known) {
-		Map<Location, List<Location>> toRet = new HashMap<Location, List<Location>>();
+	private GameState tieingBoard(GameState gs, Location src, Location dest, int dist) {
+		Piece opp = gs.board.get(dest);
+		if (opp.revealed)
+		{
+			Result res = gs.board.get(src).attack(opp);
+			if (!res.attackerLives && !res.defenderLives)
+			{
+				GameState toRet = new GameState(gs);
+				toRet.remove(src);
+				toRet.remove(dest);
+				return toRet;
+			}
+			return null;
+		}
+		Result testBest = gs.board.get(src).attack(bestLeft);
+		//If this piece could survive their best piece then it can't be a tieing board
+		if (testBest.attackerLives && !testBest.defenderLives)
+			return null;
+		GameState toRet = new GameState(gs);
+		toRet.remove(src);
+		toRet.remove(dest);
+		return toRet;
+	}
+
+	private GameState losingBoard(GameState gs, Location src, Location dest, int dist) {
+		Piece opp = gs.board.get(dest);
+		Piece mine = gs.board.get(src);
+		if (opp.revealed)
+		{
+			Result res = mine.attack(opp);
+			if (!res.attackerLives && res.defenderLives)
+			{
+				GameState toRet = new GameState(gs);
+				toRet.remove(src);
+				return toRet;				
+			}
+			return null;
+		}
+		Result testBest = mine.attack(bestLeft);
+		//If the defender is guaranteed to die (and no bombs unless Miner), then our piece can't lose the combat
+		if ((!minesLeft || mine.equals(Pieces.MINER) || opp.moved) && !testBest.defenderLives)
+			return null;
+		GameState toRet = new GameState(gs);
+		toRet.remove(src);
+		return toRet;
+	}
+
+	private GameState winningBoard(GameState gs, Location src, Location dest, int dist) {
+		Piece opp = gs.board.get(dest);
+		if (!opp.revealed)
+		{
+			GameState toRet = new GameState(gs);
+			toRet.replace(src, dest);
+			return toRet;
+		}
+		Piece mine = gs.board.get(src);
+		Result res = mine.attack(opp);
+		if (res.attackerLives && !res.defenderLives)
+		{
+			GameState toRet = new GameState(gs);
+			toRet.replace(src, dest);
+			return toRet;			
+		}
+		return null;
+
+	}
+
+	private Map<Location, List<LocDist>> getAllActions(GameState gs, boolean known, PlayerEnum play) {
+		Map<Location, List<LocDist>> toRet = new HashMap<Location, List<LocDist>>();
+		List<Location> myPieces;
+		if (player.equals(PlayerEnum.RED))
+			myPieces = gs.redPieces;
+		else
+			myPieces = gs.bluPieces;
 		for (Location loc : myPieces)
 		{
-			List<Location> destinations = board.occupyLocations(loc, player, (!known && scoutsLeft));
+			List<LocDist> destinations = gs.board.occupyLocations(loc, play, (!known && scoutsLeft));
 			if (destinations.size() != 0)
 				toRet.put(loc, destinations);
 		}
