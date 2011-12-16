@@ -1,9 +1,13 @@
 package stratego.learner.main;
 
+import java.util.HashMap;
+
 import stratego.learner.board.Board;
 import stratego.learner.board.Game;
 import stratego.learner.board.PlayerEnum;
 import stratego.learner.player.CheaterBot;
+import stratego.learner.player.RandomPlayer;
+import stratego.learner.player.SPAMbot;
 
 public class CheaterGame {
 
@@ -26,7 +30,7 @@ public class CheaterGame {
 		Board board = new Board(boardCoding);
 		
 		Game game = new Game(board, PlayerEnum.RED);
-		game.game(new CheaterBot(), new CheaterBot(), true);
+		game.game(new SPAMbot(true, new HashMap<Integer,Double>(), .8, 1), new RandomPlayer(), true);
 
 	}
 

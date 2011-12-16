@@ -311,7 +311,7 @@ public class Board implements Map<Location, Piece> {
 		List<LocDist> toRet = new ArrayList<LocDist>();
 		
 		Piece piece = get(pieceLoc);
-		if (!piece.canMove())
+		if (piece == null || !piece.canMove())
 			return toRet;
 		int distance = 1;
 		if (piece.pieceType().equals(Pieces.SCOUT) || (treatHiddenAsScout && !piece.revealed))
@@ -364,39 +364,4 @@ public class Board implements Map<Location, Piece> {
 		return canOccupy(loc.xcord, loc.ycord, player);
 	}
 	
-	
-	 
-	// public String toString()
-	// {
-	// StringBuilder sb = new StringBuilder();
-	// sb.append("  ");
-	// for (int i = 0; i < 10; i++)
-	// sb.append(i);
-	// sb.append('\n');
-	// for (int i = 0; i < 10; i++)
-	// {
-	// sb.append(i);
-	// sb.append(':');
-	// for (int j = 0; j < 10; j++)
-	// {
-	// Piece piece = getPiece(new Location(i, j));
-	// if (piece == null)
-	// sb.append('_');
-	// else
-	// {
-	// sb.append(piece.pieceType().pieceType());
-	// }
-	// }
-	// sb.append(':');
-	// sb.append(i);
-	// sb.append('\n');
-	// }
-	// sb.append("  ");
-	// for (int i = 0; i < 10; i++)
-	// sb.append(i);
-	// return sb.toString();
-	// }
-	//
-
-
 }

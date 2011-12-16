@@ -143,17 +143,18 @@ public class SPAMbot implements Player {
 				Double IntegerVal = qMap.get(Integer); 
 				if(IntegerVal == null)
 					IntegerVal = Double.MIN_VALUE;
-				if (maxQ < IntegerVal)
+				if (maxQ.doubleValue() > IntegerVal.doubleValue())
 				{
 					maxQ = IntegerVal;
 					tieActions.clear();
 					tieActions.add(e.getKey());
-					System.out.println("here");
-				} else if (maxQ == IntegerVal)
+					//System.out.println("here");
+				} else if (maxQ.doubleValue() == IntegerVal.doubleValue())
 				{
 					tieActions.add(e.getKey());
-					System.out.println("there");
+					//System.out.println("there");
 				}
+				//System.out.println("anywhere");
 			}
 		}
 
@@ -164,6 +165,8 @@ public class SPAMbot implements Player {
 		
 		if (training)
 		{			
+			if(!qMap.keySet().contains(current))
+				qMap.put(current, Double.MIN_VALUE);
 			qMap.put(current, (1 - learningRate) * qMap.get(current) + (learningRate) * (reward(taken, gs) + discountRate * maxQ) );
 		}
 		
@@ -171,6 +174,8 @@ public class SPAMbot implements Player {
 	}
 
 	private double reward(Action taken, GameState gs) {
+		if (gs.board.get(taken.dest) == null)
+			return 0;
 		if (gs.board.get(taken.dest).pieceType() == Pieces.FLAG)
 			return 100;
 		for(Entry<Action, Set<Integer>> entry : getAllPossibleNextStates(getAllActions(gs, false, player), gs).entrySet())
