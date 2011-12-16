@@ -121,7 +121,7 @@ public class SPAMbot implements Player {
 				else if (board.get(l).pieceType().equals(Pieces.BOMB))
 					minesLeft = true;
 				
-				else if (bestLeft == null || board.get(l).attack(bestLeft).attackerLives)
+				else if (!board.get(l).pieceType().equals(Pieces.FLAG) && (bestLeft == null || board.get(l).attack(bestLeft).attackerLives))
 					bestLeft = board.get(l);
 			}
 		}
@@ -141,14 +141,18 @@ public class SPAMbot implements Player {
 			for (Integer Integer : e.getValue())
 			{
 				Double IntegerVal = qMap.get(Integer); 
+				if(IntegerVal == null)
+					IntegerVal = Double.MIN_VALUE;
 				if (maxQ < IntegerVal)
 				{
 					maxQ = IntegerVal;
 					tieActions.clear();
 					tieActions.add(e.getKey());
+					System.out.println("here");
 				} else if (maxQ == IntegerVal)
 				{
 					tieActions.add(e.getKey());
+					System.out.println("there");
 				}
 			}
 		}
@@ -292,9 +296,12 @@ public class SPAMbot implements Player {
 				
 				GameState gsPotential;
 				gsPotential = winningBoard(gs, src, dest.loc, dest.dist);
-				Map<Location, List<LocDist>> results = getAllActions(gsPotential, false, player.opposite());
+				Map<Location, List<LocDist>> results;
+				if (gsPotential != null)
+				{
+				results = getAllActions(gsPotential, false, player.opposite());
 				states.addAll(getAllStates(gsPotential, results));
-				
+				}
 				gsPotential = losingBoard(gs, src, dest.loc, dest.dist);
 				if (gsPotential != null)
 				{
@@ -401,6 +408,12 @@ public class SPAMbot implements Player {
 
 	private GameState tieingBoard(GameState gs, Location src, Location dest, int dist) {
 		Piece opp = gs.board.get(dest);
+		if(opp == null)
+		{
+			GameState toRet = new GameState(gs);
+			toRet.replace(src, dest);
+			return toRet;	
+		}
 		if (opp.revealed)
 		{
 			Result res = gs.board.get(src).attack(opp);
@@ -426,6 +439,12 @@ public class SPAMbot implements Player {
 	private GameState losingBoard(GameState gs, Location src, Location dest, int dist) {
 		Piece opp = gs.board.get(dest);
 		Piece mine = gs.board.get(src);
+		if(opp == null)
+		{
+			GameState toRet = new GameState(gs);
+			toRet.replace(src, dest);
+			return toRet;	
+		}
 		if (opp.revealed)
 		{
 			Result res = mine.attack(opp);
@@ -448,6 +467,12 @@ public class SPAMbot implements Player {
 
 	private GameState winningBoard(GameState gs, Location src, Location dest, int dist) {
 		Piece opp = gs.board.get(dest);
+		if(opp == null)
+		{
+			GameState toRet = new GameState(gs);
+			toRet.replace(src, dest);
+			return toRet;	
+		}
 		if (!opp.revealed)
 		{
 			GameState toRet = new GameState(gs);
