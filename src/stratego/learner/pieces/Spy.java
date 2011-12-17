@@ -11,8 +11,6 @@ public class Spy extends Piece {
 
 	@Override
 	public Result attack(Piece defender) {
-		this.reveal();
-		defender.reveal();
 		if (defender.pieceType().equals(Pieces.MARSHALL))
 			return new Result(true, false);
 		else if (defender.pieceType().equals(Pieces.SPY))

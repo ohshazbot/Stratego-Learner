@@ -11,8 +11,6 @@ public class Flag extends Piece {
 
 	@Override
 	public Result attack(Piece defender) {
-		this.reveal();
-		defender.reveal();
 		throw new UnsupportedOperationException("Flags can't attack!");
 	}
 

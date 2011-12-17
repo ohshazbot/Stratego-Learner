@@ -7,6 +7,7 @@ import stratego.learner.pieces.Piece.Result;
 import stratego.learner.pieces.Pieces;
 import stratego.learner.player.Action;
 import stratego.learner.player.Player;
+import stratego.learner.player.Util;
 
 
 public class Game {
@@ -38,6 +39,8 @@ public class Game {
 		else
 		{
 			Result result = piece.attack(opponent);
+			piece.reveal();
+			opponent.reveal();
 			if (!result.attackerLives)
 			{
 				board.remove(act.src);
@@ -66,7 +69,7 @@ public class Game {
 		board.move(curr, act.dest);
 	}
 
-	public void game(Player rPlayer, Player bPlayer, boolean printBoard)
+	public int game(Player rPlayer, Player bPlayer, boolean printBoard)
 	{
 		rPlayer.setRedPlayer();
 		bPlayer.setBluePlayer();
@@ -86,12 +89,41 @@ public class Game {
 			Action action = null;
 			List<Location> myLocs;
 			List<Location> oppLoc;
+			myLocs = board.getPlayerLocations(turn);
+			oppLoc = board.getPlayerLocations(turn.opposite());
+			GameState gs;
+			if (turn.equals(PlayerEnum.RED))
+			{
+				gs = new GameState(board, myLocs, oppLoc);
+			} else
+			{
+				gs = new GameState(board, oppLoc, myLocs);
+			}
+			
+			if (Util.getAllActions(gs, false, turn).size() == 0 )
+			{
+				if (turn.equals(PlayerEnum.BLUE))
+				{
+					rPlayer.wins();
+					bPlayer.loses();
+					return 1;
+				}
+				else
+				{
+					bPlayer.wins();
+					rPlayer.loses();
+					return -1;
+				}
+			}
 			
 			while (action == null)
 			{
-				myLocs = board.getPlayerLocations(turn);
-				oppLoc = board.getPlayerLocations(turn.opposite());
 				action = currPlayer.getAction(myLocs, oppLoc, board, false);
+				if (action == null)
+				{
+					myLocs = board.getPlayerLocations(turn);
+					oppLoc = board.getPlayerLocations(turn.opposite());
+				}
 			}
 			while (!move(action))
 			{
@@ -108,16 +140,18 @@ public class Game {
 				{
 					rPlayer.wins();
 					bPlayer.loses();
+					return 1;
 				}
 				else
 				{
 					bPlayer.wins();
 					rPlayer.loses();
+					return -1;
 				}
 			}
 		}
+		return 0;
 	}
-	
 	
 	private String boardString(Board board) {
 		StringBuilder sb = new StringBuilder();

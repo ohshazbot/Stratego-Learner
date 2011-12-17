@@ -11,8 +11,6 @@ public class Bomb extends Piece {
 
 	@Override
 	public Result attack(Piece defender) {
-		this.reveal();
-		defender.reveal();
 		throw new UnsupportedOperationException("Bombs can't attack!");
 	}
 

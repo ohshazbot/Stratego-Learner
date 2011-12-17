@@ -229,7 +229,7 @@ public class Board implements Map<Location, Piece> {
 	{
 		return (x < 0 || y < 0 || x >= xDim || y >= yDim || (board[x][y] != null && board[x][y].isWater()));
 	}
-	
+
 	public List<Location> getPlayerLocations(PlayerEnum player) {
 		List<Location> toRet = new LinkedList<Location>();
 		Piece p;
@@ -251,47 +251,47 @@ public class Board implements Map<Location, Piece> {
 		return board[i][j];
 	}
 
-	 public void move(Location curr, Location destination) throws InvalidLocationException {
-		 validate(curr);
-		 validate(destination);
-		 board[destination.xcord][destination.ycord] =
-		 board[curr.xcord][curr.ycord];
-		 board[curr.xcord][curr.ycord] = null;
-	 }
+	public void move(Location curr, Location destination) throws InvalidLocationException {
+		validate(curr);
+		validate(destination);
+		board[destination.xcord][destination.ycord] =
+				board[curr.xcord][curr.ycord];
+		board[curr.xcord][curr.ycord] = null;
+	}
 
 
-	 public boolean isOpen(int x, int y) {
-		 if (!isInvalid(x,y))
-			 return false;
-		 return board[x][y] == null;
-	 }
+	public boolean isOpen(int x, int y) {
+		if (!isInvalid(x,y))
+			return false;
+		return board[x][y] == null;
+	}
 
-	 public SortedMap<Integer, LinkedHashMap<Location, Location>> getPiecesByDistance(
-			 List<Location> myPieces, Location center) {
-		 SortedMap<Integer, LinkedHashMap<Location, Location>> toRet = new TreeMap<Integer, LinkedHashMap<Location, Location>>();
-		 for (Location loc : myPieces) {
-			 Piece piece = get(loc);
-			 if (!piece.canMove())
-				 continue;
+	public SortedMap<Integer, LinkedHashMap<Location, Location>> getPiecesByDistance(
+			List<Location> myPieces, Location center) {
+		SortedMap<Integer, LinkedHashMap<Location, Location>> toRet = new TreeMap<Integer, LinkedHashMap<Location, Location>>();
+		for (Location loc : myPieces) {
+			Piece piece = get(loc);
+			if (!piece.canMove())
+				continue;
 
-			 Location offset = distance(center, loc);
-			 int dist = Math.abs(offset.xcord) + Math.abs(offset.ycord);
-			 LinkedHashMap<Location, Location> list = toRet.get(dist);
-			 if (list == null) {
-				 list = new LinkedHashMap<Location, Location>();
-				 toRet.put(dist, list);
-			 }
-			 list.put(loc, offset);
-		 }
+			Location offset = distance(center, loc);
+			int dist = Math.abs(offset.xcord) + Math.abs(offset.ycord);
+			LinkedHashMap<Location, Location> list = toRet.get(dist);
+			if (list == null) {
+				list = new LinkedHashMap<Location, Location>();
+				toRet.put(dist, list);
+			}
+			list.put(loc, offset);
+		}
 
-		 return toRet;
-	 }
+		return toRet;
+	}
 
 	// This does not account for water, pieces in way
 	public Location distance(Location center, Location loc) {
 		return new Location(center.xcord - loc.xcord, center.ycord - loc.ycord);
 	}
-	
+
 	public boolean canOccupy(int xcord, int ycord, PlayerEnum player) {
 		if (isInvalid(xcord, ycord))
 			return false;
@@ -309,59 +309,109 @@ public class Board implements Map<Location, Piece> {
 
 	public List<LocDist> occupyLocations(Location pieceLoc, PlayerEnum player, boolean treatHiddenAsScout) {
 		List<LocDist> toRet = new ArrayList<LocDist>();
-		
+
 		Piece piece = get(pieceLoc);
 		if (piece == null || !piece.canMove())
 			return toRet;
 		int distance = 1;
 		if (piece.pieceType().equals(Pieces.SCOUT) || (treatHiddenAsScout && !piece.revealed))
 			distance = Math.max(xDim, yDim);
-		
+
 		for (int i = 1; i <= distance; i++)
 		{
-			if (canOccupy(pieceLoc.addX(i), player))
+			Location loc = pieceLoc.addX(i);
+			if (canOccupy(loc, player))
 			{
 				toRet.add(new LocDist(pieceLoc.addX(i), i));
 			}
 			else
 				break;
+			if (get(loc) != null)
+				break;
 		}
-		
+
 		for (int i = 1; i <= distance; i++)
 		{
-			if (canOccupy(pieceLoc.addX(-1*i), player))
+			Location loc = pieceLoc.addX(-1*i);
+			if (canOccupy(loc, player))
 			{
 				toRet.add(new LocDist(pieceLoc.addX(-1*i), i));
 			}
 			else
 				break;
+			if (get(loc) != null)
+				break;
 		}
-		
+
 		for (int i = 1; i <= distance; i++)
 		{
-			if (canOccupy(pieceLoc.addY(i), player))
+			Location loc = pieceLoc.addY(i);
+			if (canOccupy(loc, player))
 			{
 				toRet.add(new LocDist(pieceLoc.addY(i), i));
 			}
 			else
 				break;
+			if (get(loc) != null)
+				break;
 		}
-		
+
 		for (int i = 1; i <= distance; i++)
 		{
-			if (canOccupy(pieceLoc.addY(-1*i), player))
+			Location loc = pieceLoc.addY(-1*i);
+			if (canOccupy(loc, player))
 			{
 				toRet.add(new LocDist(pieceLoc.addY(-1*i), i));
 			}
 			else
 				break;
+			if (get(loc) != null)
+				break;
 		}
-		
+
 		return toRet;
 	}
 
 	private boolean canOccupy(Location loc, PlayerEnum player) {
 		return canOccupy(loc.xcord, loc.ycord, player);
 	}
-	
+
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("  ");
+		for (int i = 0; i < 10; i++)
+		{
+			sb.append(' ');
+			sb.append(i);
+		}
+		sb.append('\n');
+		for (int i = 0; i < 10; i++)
+		{
+			sb.append(i);
+			sb.append(':');
+			for (int j = 0; j < 10; j++)
+			{
+				Piece piece = board[i][j];
+				if (piece == null)
+					sb.append(" _");
+				else if (piece.isWater())
+					sb.append(" W");
+				else
+				{
+					sb.append(piece.owner().getType());
+					sb.append(piece.pieceType().pieceType());
+				}
+			}
+			sb.append(':');
+			sb.append(i);
+			sb.append('\n');
+		}
+		sb.append("  ");
+		for (int i = 0; i < 10; i++)
+		{
+			sb.append(' ');
+			sb.append(i);
+		}
+		return sb.toString();
+	}
 }

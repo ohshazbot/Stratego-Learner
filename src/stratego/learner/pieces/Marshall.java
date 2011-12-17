@@ -11,8 +11,6 @@ public class Marshall extends Piece {
 
 	@Override
 	public Result attack(Piece defender) {
-		this.reveal();
-		defender.reveal();
 		return defaultAttack(defender);
 	}
 

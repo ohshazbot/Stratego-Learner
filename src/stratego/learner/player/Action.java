@@ -22,4 +22,9 @@ public class Action {
 		Action other = (Action) obj;
 		return src.equals(other.src) && dest.equals(other.dest);
 	}
+	
+	public String toString()
+	{
+		return src+"->"+dest;
+	}
 }

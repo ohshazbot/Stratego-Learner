@@ -8,4 +8,9 @@ public class LocDist {
 		loc = l;
 		dist = distance;
 	}
+	
+	public String toString()
+	{
+		return loc+"_"+dist;
+	}
 }

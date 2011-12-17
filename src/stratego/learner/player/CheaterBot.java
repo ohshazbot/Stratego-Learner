@@ -12,6 +12,10 @@ import stratego.learner.pieces.Pieces;
 
 public class CheaterBot implements Player {
 	PlayerEnum player;
+	boolean squelch = false;
+	public CheaterBot(boolean squelch) {
+		this.squelch = squelch;
+	}
 
 	@Override
 	public void setRedPlayer() {
@@ -65,17 +69,21 @@ public class CheaterBot implements Player {
 			}
 		}
 		// Return a piece to trigger boolean 
-		return new Action(myPieces.get(0), myPieces.get(0));
-	}
+		if (!redo)
+			return new Action(myPieces.get(0), myPieces.get(0));
+		
+		return Util.randomAction(myPieces, board, player);	}
 
 	@Override
 	public void wins() {
-		System.out.println("Cheatbot wins");
+		if (!squelch)
+			System.out.println("Cheatbot wins");
 	}
 
 	@Override
 	public void loses() {
-		System.out.println("Cheatbot loses");
+		if (!squelch)
+			System.out.println("Cheatbot loses");
 	}
 
 }

@@ -11,8 +11,6 @@ public class Miner extends Piece {
 
 	@Override
 	public Result attack(Piece defender) {
-		this.reveal();
-		defender.reveal();
 		if (defender.pieceType().equals(Pieces.BOMB))
 			return new Result(true, false);
 		else
