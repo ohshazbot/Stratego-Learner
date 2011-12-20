@@ -34,7 +34,7 @@ public class SimpleGame {
 		}
 		
 		Game game = new Game(board, PlayerEnum.RED);
-		game.game(new CheaterBot(), new SPAMbot(true, new HashMap<Integer,Double>(), .8, 1), true);
+		game.game(new CheaterBot(true), new SPAMbot(true, new HashMap<Integer,Double>(), .8, 1), true);
 
 	}
 

@@ -71,6 +71,7 @@ public class Game {
 
 	public int game(Player rPlayer, Player bPlayer, boolean printBoard)
 	{
+		int nummoves = 0;
 		rPlayer.setRedPlayer();
 		bPlayer.setBluePlayer();
 		while(!gameOver)
@@ -131,7 +132,7 @@ public class Game {
 				oppLoc = board.getPlayerLocations(turn.opposite());
 				action = currPlayer.getAction(myLocs, oppLoc, board, true);
 			}
-			
+			//System.out.println(board.toString());
 			if (!gameOver)
 				turn = turn.opposite();
 			else
@@ -149,6 +150,9 @@ public class Game {
 					return -1;
 				}
 			}
+			if(nummoves > 1000)
+				return -7;
+			nummoves++;
 		}
 		return 0;
 	}
